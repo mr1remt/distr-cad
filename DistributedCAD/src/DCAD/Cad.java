@@ -5,7 +5,7 @@ public class Cad {
 
 	public static void main(String[] args) {
 		gui.addToListener();
-		Cad c = new Cad();
+		new Cad();
 	}
 
 	private Cad() {
