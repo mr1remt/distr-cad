@@ -18,6 +18,8 @@ import javax.swing.JFrame;
 
 public class GUI extends JFrame implements WindowListener, ActionListener, MouseListener, MouseMotionListener {
 
+	private static final long serialVersionUID = 1L;
+	
 	JButton ovalButton = new JButton("Oval");
 	JButton rectangleButton = new JButton("Rect");
 	JButton lineButton = new JButton("Line");
