@@ -1,17 +1,8 @@
-/**
- *
- * @author brom
- */
-
 package DCAD;
 
 import java.awt.Color;
 import java.awt.Graphics;
 
-/**
- *
- * @author brom
- */
 public class GObject {
 	
 	private Shape s;

@@ -1,8 +1,3 @@
-/**
- *
- * @author brom
- */
-
 package DCAD;
 
 final class Shape {

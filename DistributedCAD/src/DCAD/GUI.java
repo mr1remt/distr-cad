@@ -1,8 +1,3 @@
-/**
- *
- * @author brom
- */
-
 package DCAD;
 
 import java.awt.Color;
