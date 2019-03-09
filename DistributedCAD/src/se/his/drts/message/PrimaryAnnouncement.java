@@ -1,5 +1,8 @@
 package se.his.drts.message;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Optional;
 import java.util.UUID;
 
 public class PrimaryAnnouncement extends UniqueMessage{
@@ -36,4 +39,18 @@ public class PrimaryAnnouncement extends UniqueMessage{
 		return super.hashCode()+name.hashCode();
 	}
 	
+	/*
+	 * 
+	 * 
+	 * */
+	public void createMessage() {
+		String message = "message";
+		PrimaryAnnouncement tumA = new PrimaryAnnouncement("message");
+		byte[] byteA = tumA.serialize();
+		Optional<MessagePayload> tumA2 = MessagePayload.createMessage(byteA);
+		assertTrue(tumA2.isPresent());
+		assertTrue(tumA2.get().equals(tumA));
+		
+		
+	}
 }
