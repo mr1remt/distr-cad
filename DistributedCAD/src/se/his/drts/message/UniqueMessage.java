@@ -22,46 +22,30 @@ public class UniqueMessage extends MessagePayload {
 			}
 			return this.subIdentity.compareTo(arg0.subIdentity);
 		}
-		/* (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object obj) {
 			final MessageIdentity mi = (MessageIdentity) obj;
 			return this.uuid.equals(mi.uuid) && this.subIdentity.equals(mi.subIdentity);
 		}
-		/**
-		 * @return the identity
-		 */
 		public final BigInteger getSubIdentity() {
 			return subIdentity;
 		}
-		/**
-		 * @return the uuid
-		 */
 		public final UUID getUuid() {
 			return uuid;
 		}
-		/* (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			return this.uuid.hashCode()+this.subIdentity.hashCode();
 		}
-		/* (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return "MessageIdentity [uuid=" + uuid + ", subIdentity=" + subIdentity + "]";
 		}
-
-		
-		
-		
-		
 	}
+	/*
+	 * 
+	 * 
+	 */
 	private static BigInteger nextSubIdentity = BigInteger.ONE;
 	private static UUID uuid = UUID.fromString("32eb76f7-e72b-4fa5-ad02-95d92115c45d");
 	private BigInteger subIdentity;
@@ -79,9 +63,6 @@ public class UniqueMessage extends MessagePayload {
 			UniqueMessage.nextSubIdentity = UniqueMessage.nextSubIdentity.add(BigInteger.ONE);
 		}
 	}
-	/**
-	 * @return the identity
-	 */
 	public final BigInteger getSubIdentity() {
 		return subIdentity;
 	}

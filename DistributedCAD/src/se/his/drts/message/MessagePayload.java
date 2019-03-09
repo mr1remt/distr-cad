@@ -29,27 +29,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author melj
  *
  */
-/**
- * @author melj
- *
- */
 public class MessagePayload implements Comparable<MessagePayload> {
 	/** The purpose of this class is to provide an exception that can be handled in the
 	 * application. Essentially, the application should be able to rake corrective action.
-	 * @author melj
-	 *
 	 */
 	public static class IncorrectMessageException extends Exception {
 
 		public IncorrectMessageException(String string) {
 			super(string);
 		}
-
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 2622081140350800568L;
-
 	}
 	private UUID uuid = UUID.fromString("a9343c32-e126-4630-82ba-af983a5a7684"); // do not make static!
 	private static Pattern uuidPattern = Pattern.compile("^.*\"[uU]{2}[iI][dD]\"\\s*:\\s*\"([^\"]+)\".*$");
@@ -66,9 +55,7 @@ public class MessagePayload implements Comparable<MessagePayload> {
 		initializeMessageDigest();
 		return MessagePayload.messageDigest;
 	}
-	/**
-	 * @return the uuid
-	 */
+	
 	public final UUID getUuid() {
 		return uuid;
 	}
