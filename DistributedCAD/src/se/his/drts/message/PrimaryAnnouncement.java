@@ -45,7 +45,7 @@ public class PrimaryAnnouncement extends UniqueMessage{
 	 * */
 	public void createMessage() {
 		String message = "message";
-		PrimaryAnnouncement tumA = new PrimaryAnnouncement("message");
+		PrimaryAnnouncement tumA = new PrimaryAnnouncement(message);
 		byte[] byteA = tumA.serialize();
 		Optional<MessagePayload> tumA2 = MessagePayload.createMessage(byteA);
 		assertTrue(tumA2.isPresent());
