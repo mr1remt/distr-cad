@@ -36,6 +36,8 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 
 	private LinkedList<GObject> objectList = new LinkedList<GObject>();
 
+	private Cad cad;
+	
 	public GUI(int xpos, int ypos) {
 		setSize(xpos, ypos);
 		setTitle("FTCAD");
@@ -56,6 +58,16 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 
 		pane.setLayout(new FlowLayout());
 		setVisible(true);
+	}
+	public void addCad(Cad cad) {
+		this.cad = cad;
+	}
+	
+	public void addObject(GObject object) {
+		//TODO Add the object
+	}
+	public void removeObject(GObject object) {
+		//TODO Remove the object
 	}
 
 	public void addToListener() {
