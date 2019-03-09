@@ -8,7 +8,7 @@ import java.net.Socket;
 
 import se.his.drts.message.MessagePayload;
 
-public class ConnectionManager {
+public class ConnectionManager extends CadDocument{
 	
 	private Cad cad;
 	private Socket socket;

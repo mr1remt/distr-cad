@@ -4,6 +4,7 @@ public class Cad {
 	static private GUI gui = new GUI(750, 600);
 
 	private ConnectionManager cm;
+	private CadDocument cd;
 	
 	public static void main(String[] args) {
 		gui.addToListener();
@@ -13,7 +14,6 @@ public class Cad {
 	private Cad() {
 		gui.addCad(this);
 		cm = new ConnectionManager(this, "127.0.0.1", 50000);
-		
 	}
 	
 	public void addObject(GObject object) {
