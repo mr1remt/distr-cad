@@ -3,13 +3,12 @@ package replicaManager;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
-import org.jgroups.Receiver;
+import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
 
-public class ReplicaManager implements Receiver {
+public class ReplicaManager extends ReceiverAdapter {
 	
 	private JChannel channel;
 
@@ -17,6 +16,8 @@ public class ReplicaManager implements Receiver {
 		channel = new JChannel();
 		channel.setReceiver(this);
 		channel.connect("CAD-Service");
+		
+		channel.send(new Message(null, null, "Test"));
 		
 		while (true) {
 			Thread.sleep(1000000000);
@@ -39,8 +40,7 @@ public class ReplicaManager implements Receiver {
 
 	@Override
 	public void receive(Message m) {
-		// TODO Auto-generated method stub
-		
+		System.out.println(m.toString());
 	}
 
 	@Override
@@ -50,27 +50,8 @@ public class ReplicaManager implements Receiver {
 	}
 
 	@Override
-	public void block() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void suspect(Address addr) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void unblock() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public void viewAccepted(View view) {
-		// TODO Auto-generated method stub
-		
+		System.out.println(view.toString());
 	}
 
 }
