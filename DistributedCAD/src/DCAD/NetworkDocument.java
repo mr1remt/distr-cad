@@ -5,19 +5,20 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 import se.his.drts.message.MessagePayload;
 
-public class ConnectionManager extends CadDocument{
+public class NetworkDocument extends CadDocument{
 	
-	private Cad cad;
 	private Socket socket;
 	private PrintWriter writer;
 	private BufferedReader reader;
 	
-	public ConnectionManager(Cad cad, String serverAddress, int serverPort) {
-		this.cad = cad;
-		
+	private LinkedList<GObject> objectList = new LinkedList<GObject>();
+
+	public NetworkDocument(String serverAddress, int serverPort) {		
 		//set up socket
 		try {
 			socket = new Socket(serverAddress, serverPort);
@@ -51,7 +52,30 @@ public class ConnectionManager extends CadDocument{
 	
 	public void receive() {
 		// TODO receive an object that should be added to the list, or removed
-		cad.addObjectToGUI(null);
+		//cad.addObjectToGUI(null);
+	}
+
+	@Override
+	public void addGObject(GObject object) {
+		// TODO Auto-generated method stub
+		
+		objectList.addLast(object);
+		
+	}
+
+	@Override
+	public void removeLastGObject() {
+		// TODO Auto-generated method stub
+		objectList.removeLast();
+	}
+
+	@Override
+	public int size() {
+		return objectList.size();
+	}
+	
+	public Iterator<GObject> iterator() {
+		return objectList.iterator(); 
 	}
 	
 	

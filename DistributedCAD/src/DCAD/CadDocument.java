@@ -1,21 +1,15 @@
 package DCAD;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 
-public abstract class CadDocument {
-	
-	private LinkedList<GObject> objectList = new LinkedList<GObject>();
-	
+public abstract class CadDocument implements Iterable<GObject>{		
 	
 	public abstract void addGObject(GObject object);
 	
-	public abstract void removeGObject(GObject object);
+	public abstract void removeLastGObject();
 	
-	
-	public LinkedList<GObject> GObjectList(){
-		//TODO synchronize?
-		return objectList;
-	}
+	public abstract int size();
 	
 	
 }
