@@ -33,12 +33,12 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 
 	private GObject template = new GObject(Shape.OVAL, Color.RED, 363, 65, 25, 25);
 	private GObject current = null;
-
-	private LinkedList<GObject> objectList = new LinkedList<GObject>();
-
-	private Cad cad;
 	
-	public GUI(int xpos, int ypos) {
+	private CadDocument doc;
+	
+	public GUI(CadDocument doc, int xpos, int ypos) {
+		this.doc = doc;
+		
 		setSize(xpos, ypos);
 		setTitle("FTCAD");
 
@@ -58,16 +58,6 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 
 		pane.setLayout(new FlowLayout());
 		setVisible(true);
-	}
-	public void addCad(Cad cad) {
-		this.cad = cad;
-	}
-	
-	public void addObject(GObject object) {
-		//TODO Add the object
-	}
-	public void removeObject(GObject object) {
-		//TODO Remove the object
 	}
 
 	public void addToListener() {
@@ -134,15 +124,18 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 	public void mouseClicked(MouseEvent e) {
 		// User clicks the right mouse button:
 		// undo an operation by removing the most recently added object.
-		if (e.getButton() == MouseEvent.BUTTON3 && objectList.size() > 0) {
-			objectList.removeLast();
+		if (e.getButton() == MouseEvent.BUTTON3 && doc.size() > 0) {
+			
+			//TODO remove an object, just your own?? or everyones objects
+			doc.removeLastGObject();
+			
 		}
 		repaint();
 	}
 
 	public void mouseReleased(MouseEvent e) {
 		if (current != null) {
-			objectList.addLast(current);
+			doc.addGObject(current);
 			current = null;
 		}
 		repaint();
@@ -191,8 +184,8 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 
 		template.draw(g);
 
-		for (ListIterator<GObject> itr = objectList.listIterator(); itr.hasNext();) {
-			itr.next().draw(g);
+		for (GObject go : doc) {
+			go.draw(g);
 		}
 
 		if (current != null) {
