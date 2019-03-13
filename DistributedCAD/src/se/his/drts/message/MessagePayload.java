@@ -2,11 +2,11 @@ package se.his.drts.message;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -131,7 +131,12 @@ public class MessagePayload implements Comparable<MessagePayload> {
 					if (url == null) {
 						continue;
 					}
-					File directory = new File(url.getFile());
+					File directory;
+					try {
+						directory = new File(URLDecoder.decode(url.getFile(), "UTF-8"));
+					}catch (UnsupportedEncodingException e) {
+						continue;
+					}
 					if (directory.exists()) {
 						String [] files = directory.list();
 						for (int i=0;i<files.length;i++) {
