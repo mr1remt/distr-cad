@@ -7,6 +7,8 @@ public class ConnectionRequest extends UniqueMessage {
 	
 	private String ID;
 	
+	// TODO not used by the client ! ?
+	
 	protected ConnectionRequest() {
 		super(ConnectionRequest.uuid);
 	}

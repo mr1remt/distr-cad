@@ -126,7 +126,7 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 		// undo an operation by removing the most recently added object.
 		if (e.getButton() == MouseEvent.BUTTON3 && doc.size() > 0) {
 			
-			//TODO remove an object, just your own?? or everyones objects
+			//TODO remove an object, everyones objects
 			doc.removeLastGObject();
 			
 		}

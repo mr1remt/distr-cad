@@ -7,6 +7,8 @@ import java.util.UUID;
 public class GObject {
 
 	private UUID uuid;
+	private boolean removed;
+	
 	private Shape s;
 	private Color c;
 	private int x, y, width, height;
@@ -22,6 +24,7 @@ public class GObject {
 		this.width = width;
 		this.height = height;
 		this.uuid = UUID.randomUUID();
+		this.removed = false;
 	}
 
     public void setShape(Shape s) {this.s = s;}
@@ -35,7 +38,9 @@ public class GObject {
     
     public void setUuid(UUID uuid) {this.uuid = uuid;}
     public UUID getUuid() { return uuid;}
-
+    public boolean isRemoved() {return removed;}
+    public void setRemoved(boolean removed) {this.removed = removed;}
+    
 	public void draw(Graphics g) {
 		g.setColor(c);
 		int drawX = x, drawY = y, drawWidth = width, drawHeight = height;

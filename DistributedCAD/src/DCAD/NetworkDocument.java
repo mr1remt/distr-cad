@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Optional;
 
+import se.his.drts.message.ClientConnectionRequest;
 import se.his.drts.message.ConnectionRequest;
 import se.his.drts.message.DrawObject;
 import se.his.drts.message.MessagePayload;
@@ -25,73 +26,41 @@ public class NetworkDocument extends CadDocument{
 	
 	private LinkedList<MessagePayload> messagesToSend = new LinkedList<MessagePayload>();
 
-	public NetworkDocument(String serverAddress, int serverPort) {		
+	public NetworkDocument(String serverAddress, int serverPort) {	
+		
+		//TODO start a send thread
+		
+		
+		
 		//set up socket
+		while(true) {
+			if (!(setupSocket(serverAddress, serverPort))) {
+				continue;
+			}
+			handshake();
+			
+			while(receive()) { }
+		}
+	}
+	public boolean setupSocket(String serverAddress, int serverPort) {
 		try {
 			socket = new Socket(serverAddress, serverPort);
 			writer = new PrintWriter(socket.getOutputStream(), true);
 			reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		} catch (IOException e) {
-			//TODO retry setup?
+			e.printStackTrace();			
+			return false;
 		}
-		while(true) {
-			handshake();
-			
-			while(receive()) {
-			}
-		}
-		
-		
+		return true;
 	}
 	
 	public void handshake() {
-		//TODO send name or id to the front end 
-		ConnectionRequest connectionRequestMessage = new ConnectionRequest("IP + something else?");
+		//TODO send name + id OR SOMETHING LIKE THAT to the front end 
+		ClientConnectionRequest clientConnectionRequestMessage = new ClientConnectionRequest(socket.getInetAddress().toString() + socket.getLocalPort());
 		
-		String message = connectionRequestMessage.serializeAsString();
-
-		writer.println(message);
+		String message = clientConnectionRequestMessage.serializeAsString();
 		
-		message = "";
-		try {
-			message = reader.readLine();
-		} catch (SocketException e) {
-			// server has crashed ???? 
-			
-			//TODO maybe this is right i dont know :)
-			if(!(socket.isClosed())) {
-				try {
-					socket.shutdownInput();
-					socket.shutdownOutput();
-					socket.close();
-				} catch (IOException e1) {
-					e.printStackTrace();
-					// Failed to close socket	
-				}
-			}
-						
-		} catch (Exception e) {
-			//failed to read message?
-			e.printStackTrace();
-		}
-		
-		byte[] bytes = message.getBytes();
-		
-		Optional<MessagePayload> mp = MessagePayload.createMessage(bytes);
-		
-		MessagePayload messagePayload = mp.get();
-		
-		if (messagePayload instanceof ConnectionRequest) {
-			//TODO add message
-			
-			ConnectionRequest connectionReplyMessage = (ConnectionRequest) messagePayload;
-			
-			connectionReplyMessage.getID();
-		}
-		else {
-			
-		}
-		
+		writer.println("message");
 	}
 	
 	public boolean receive() {
@@ -100,26 +69,14 @@ public class NetworkDocument extends CadDocument{
 		String message = "";
 		try {
 			message = reader.readLine();
-		} catch (SocketException e) {
-			// server has crashed ???? 
-			
-			//TODO maybe this is right i dont know :)
-			if(!(socket.isClosed())) {
-				try {
-					socket.shutdownInput();
-					socket.shutdownOutput();
-					socket.close();
-				} catch (IOException e1) {
-					e.printStackTrace();
-					// Failed to close socket	
-				}
+		} catch (IOException e) {
+			// frontend has crashed 
+			try {
+				socket.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
 			}
-			
 			return false;
-			
-		} catch (Exception e) {
-			//failed to read message?
-			e.printStackTrace();
 		}
 		
 		byte[] bytes = message.getBytes();
@@ -128,12 +85,19 @@ public class NetworkDocument extends CadDocument{
 		
 		MessagePayload messagePayload = mp.get();
 		
-		if (messagePayload instanceof DrawObject) {
-			//TODO add message
-			
+		if (messagePayload instanceof DrawObject) {			
 			DrawObject drawObjectMessage = (DrawObject) messagePayload;
 			
 			LocalAddGObject(drawObjectMessage.getGObject());
+		}
+		else if (messagePayload instanceof RemoveObject) {			
+			RemoveObject removeObjectMessage = (RemoveObject) messagePayload;
+			
+			//TODO maybe just an uuid for death certificate?
+			LocalRemoveGObject(removeObjectMessage.getGObject());
+		}
+		else if(messagePayload instanceof RemoveObject) { // TODO change to some acc message -> for sendMessage method?
+			// TODO notify the "send" thread that it can continue to send messages and not overwrite them 
 		}
 		else {
 			
@@ -143,7 +107,7 @@ public class NetworkDocument extends CadDocument{
 	
 	public void sendMessage() { 
 		
-		//TODO is invoked by a timer thread or something, if empty/ first message added then send immediately
+		//TODO is invoked by a timer thread or something, if empty/ first message added then send immediately ?? maybe ?? 
 		
 		MessagePayload messagePayload = null;
 		
@@ -155,20 +119,27 @@ public class NetworkDocument extends CadDocument{
 		writer.println(message);
 		
 		// TODO wait for an acknowledgement from the front end that the message has been sent on to the replica managers
+		try {
+			wait();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		
 	}
-	
 	
 	public void addMessageToQueue(MessagePayload messagePayload) {
 		synchronized (messagesToSend) {
 			messagesToSend.add(messagePayload);
 		}
 		
-		
 	}
 	public void LocalRemoveGObject(GObject object) { 
 		
-		// in order to remove an object received from the rm/fe
+		for (GObject go : this) {
+			if (go.getUuid().equals(object.getUuid())) {
+				go.setRemoved(true);
+			}
+		}
 		
 		// check if object already exists
 		
@@ -176,19 +147,22 @@ public class NetworkDocument extends CadDocument{
 
 	public void LocalAddGObject(GObject object) { 
 		
-		// in order to add an object received from the rm/fe
+		for (GObject go : this) {
+			if (go.getUuid().equals(object.getUuid())) {
+				return;
+			}
+		}
 		
-		// check if object already exists
-		
-		
-		
+		synchronized (objectList) {
+			objectList.add(object);
+		}
 	}
 
 	@Override
 	public void addGObject(GObject object) {
 		
 		synchronized (objectList) {
-			objectList.addLast(object);
+			objectList.add(object);
 		}
 		
 		//send a message with the object that should be added
