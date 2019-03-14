@@ -130,9 +130,15 @@ public class ReplicaManager extends ReceiverAdapter {
 			
 		// A new (maybe) coordinator has arrived
 		}else if (msg instanceof BullyCoordinatorMessage) {
-			// Set 'primary' = address of whoever we received it from
-			primary = m.getSrc();
-			System.out.println("Primary announcement received from " + primary);
+			System.out.println("Primary announcement received from " + m.getSrc());
+			
+			// Make sure it actually has a higher ID than us
+			if (channel.getAddress().compareTo(m.getSrc()) > 0) {
+				startElection();
+			}else {
+				// Set 'primary' = address of whoever we received it from
+				primary = m.getSrc();
+			}
 		}
 		
 		// Client request: Fetch state
