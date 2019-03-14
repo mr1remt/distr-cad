@@ -204,7 +204,12 @@ public class ReplicaManager extends ReceiverAdapter {
 		// Send the local CAD state to the new replica manager
 		synchronized (state) {
 			try {
-				Util.objectToStream(state, new DataOutputStream(os));
+				// Only send state if we've actually got it
+				if (stateSynced) {
+					Util.objectToStream(state, new DataOutputStream(os));
+				}else {
+					Util.objectToStream(null, new DataOutputStream(os));
+				}
 			}catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -220,6 +225,7 @@ public class ReplicaManager extends ReceiverAdapter {
 				if (response == null) return;
 				
 				state = response;
+				stateSynced = true;
 			}catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -232,20 +238,34 @@ public class ReplicaManager extends ReceiverAdapter {
 		
 		currentView = view;
 		
+		if (view.size() == 1 && stateSynced == false) {
+			System.out.println("First RM, creating new state");
+			stateSynced = true;
+		}
+
 		// When we initially join, ask every other node for the state
 		if (stateSynced == false) {
+			System.out.println("Requesting state");
 			
 			for (Address addr : view) {
 				if (addr.equals(channel.getAddress())) continue;
 				
 				try {
 					channel.getState(addr, 10000);
-					stateSynced = true;
-					break;
 				}catch (Exception e) {
 					e.printStackTrace();
 					continue;
 				}
+
+				if (stateSynced) {
+					System.out.println("Got state");
+					break;
+				}
+			}
+			
+			if (!stateSynced) {
+				System.out.println("Failed to retrieve state, creating new state");
+				stateSynced = true;
 			}
 		}
 		
