@@ -135,6 +135,7 @@ public class MessagePayload implements Comparable<MessagePayload> {
 					try {
 						directory = new File(URLDecoder.decode(url.getFile(), "UTF-8"));
 					}catch (UnsupportedEncodingException e) {
+						e.printStackTrace();
 						continue;
 					}
 					if (directory.exists()) {

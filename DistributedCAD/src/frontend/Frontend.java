@@ -9,7 +9,7 @@ public class Frontend {
 	
 	private ServerSocket serverSocket;
 
-	public Frontend() {
+	public void connect() {
 		// Open TCP server socket
 		try {
 			serverSocket = new ServerSocket(50000);
@@ -21,6 +21,7 @@ public class Frontend {
 		// Connect to the replica managers
 		try {
 			rmConn = new RMConnection();
+			rmConn.connect();
 		}catch (Exception e) {
 			e.printStackTrace();
 			System.exit(-1);
@@ -42,6 +43,7 @@ public class Frontend {
 
 	public static void main(String[] args) {
 		Frontend f = new Frontend();
+		f.connect();
 		f.listenForClientConnections();
 	}
 
