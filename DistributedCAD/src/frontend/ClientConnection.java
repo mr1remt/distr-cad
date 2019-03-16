@@ -69,8 +69,13 @@ public class ClientConnection implements Runnable {
 		
 		return true;
 	}
-	public void sendMessageClient() {
+	public void sendMessageClient(MessagePayload mp) {
 		//TODO for sending a reply message from the replica manager to the client
+		
+		String message = mp.serializeAsString();
+
+		writer.println(message);
+		
 	}
 	
 	public void sendMessageRM(MessagePayload mp) {
@@ -80,6 +85,8 @@ public class ClientConnection implements Runnable {
 		/*TODO if the replica manager is available then send a message to the client confirming 
 		 * that the message will be processed and that it can continue sending messages 
 		 * */
+		
+		
 		
 	}
 

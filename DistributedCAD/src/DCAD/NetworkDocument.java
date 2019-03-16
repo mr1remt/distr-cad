@@ -13,6 +13,7 @@ import java.util.Optional;
 import se.his.drts.message.ClientConnectionRequest;
 import se.his.drts.message.ConnectionRequest;
 import se.his.drts.message.DrawObject;
+import se.his.drts.message.MessageConfirmed;
 import se.his.drts.message.MessagePayload;
 import se.his.drts.message.RemoveObject;
 
@@ -22,23 +23,17 @@ public class NetworkDocument extends CadDocument{
 	private PrintWriter writer;
 	private BufferedReader reader;
 	
+	private NetworkSend ns;
+	
 	private LinkedList<GObject> objectList = new LinkedList<GObject>();
 	
-	private LinkedList<MessagePayload> messagesToSend = new LinkedList<MessagePayload>();
-
-	public NetworkDocument(String serverAddress, int serverPort) {	
-		
-		//TODO start a send thread
-		
-		
-		
+	public NetworkDocument(String serverAddress, int serverPort) {			
 		//set up socket
 		while(true) {
 			if (!(setupSocket(serverAddress, serverPort))) {
+				// if the front end is down then the client cannot connect and should try again
 				continue;
 			}
-			handshake();
-			
 			while(receive()) { }
 		}
 	}
@@ -48,9 +43,18 @@ public class NetworkDocument extends CadDocument{
 			writer = new PrintWriter(socket.getOutputStream(), true);
 			reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		} catch (IOException e) {
-			e.printStackTrace();			
+			e.printStackTrace();
 			return false;
 		}
+		if(ns == null) {		
+			// start a send thread
+			new Thread(ns = new NetworkSend(this, writer)).start();
+		}
+		
+		handshake();
+
+		ns.notify();
+		
 		return true;
 	}
 	
@@ -93,66 +97,44 @@ public class NetworkDocument extends CadDocument{
 		else if (messagePayload instanceof RemoveObject) {			
 			RemoveObject removeObjectMessage = (RemoveObject) messagePayload;
 			
-			//TODO maybe just an uuid for death certificate?
 			LocalRemoveGObject(removeObjectMessage.getGObject());
 		}
-		else if(messagePayload instanceof RemoveObject) { // TODO change to some acc message -> for sendMessage method?
-			// TODO notify the "send" thread that it can continue to send messages and not overwrite them 
+		else if(messagePayload instanceof MessageConfirmed) { // TODO change to some acc message -> for sendMessage method?
+			// notify the "send" thread that it can continue to send messages and not overwrite them
+			MessageConfirmed messageConfirmedMessage = (MessageConfirmed) messagePayload;
+			ns.setMessageConfirmed(true);
+			ns.notify();
 		}
 		else {
 			
 		}
 		return true;
 	}
-	
-	public void sendMessage() { 
-		
-		//TODO is invoked by a timer thread or something, if empty/ first message added then send immediately ?? maybe ?? 
-		
-		MessagePayload messagePayload = null;
-		
-		synchronized (messagesToSend) {
-			messagePayload = messagesToSend.removeFirst();
-		}
-		String message = messagePayload.serializeAsString();
 
-		writer.println(message);
-		
-		// TODO wait for an acknowledgement from the front end that the message has been sent on to the replica managers
-		try {
-			wait();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		
-	}
 	
 	public void addMessageToQueue(MessagePayload messagePayload) {
-		synchronized (messagesToSend) {
-			messagesToSend.add(messagePayload);
-		}
+		ns.addMessageToSend(messagePayload);
 		
 	}
 	public void LocalRemoveGObject(GObject object) { 
-		
+
+		// find the object if it already exists and remove it
 		for (GObject go : this) {
 			if (go.getUuid().equals(object.getUuid())) {
-				go.setRemoved(true);
+				objectList.remove(go);
 			}
 		}
-		
-		// check if object already exists
-		
 	}
 
 	public void LocalAddGObject(GObject object) { 
 		
 		for (GObject go : this) {
 			if (go.getUuid().equals(object.getUuid())) {
+				// if object already exists
 				return;
 			}
 		}
-		
+		// add if object is new
 		synchronized (objectList) {
 			objectList.add(object);
 		}

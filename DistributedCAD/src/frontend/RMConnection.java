@@ -12,6 +12,7 @@ import org.jgroups.View;
 import org.jgroups.util.Util;
 
 import se.his.drts.message.BullyCoordinatorMessage;
+import se.his.drts.message.DrawObject;
 import se.his.drts.message.FrontendAnnouncement;
 import se.his.drts.message.MessagePayload;
 
@@ -48,6 +49,11 @@ public class RMConnection extends ReceiverAdapter {
 			primary = m.getSrc();
 			System.out.println("Node " + primary.toString() + " registered as primary");
 		}
+		else if (msg instanceof DrawObject) {
+			//TODO send message to the clients 
+		}
+		
+		
 	}
 
 	@Override
