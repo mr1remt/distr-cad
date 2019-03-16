@@ -34,7 +34,7 @@ public class Frontend {
 				// Create a new thread for every connected client
 				new Thread(new ClientConnection(
 					serverSocket.accept()
-				));
+				)).start();
 			}catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -10,6 +10,7 @@ public class NetworkSend implements Runnable{
 	private NetworkDocument nd;
 	private PrintWriter writer;
 	private LinkedList<MessagePayload> messagesToSend = new LinkedList<MessagePayload>();
+	private Object lock = new Object();
 	
 	//TODO use uuid?
 	private boolean messageConfirmed;
@@ -23,6 +24,12 @@ public class NetworkSend implements Runnable{
 	
 	public boolean isMessageConfirmed() {return messageConfirmed;}
 	public void setMessageConfirmed(boolean messageConfirmed) {this.messageConfirmed = messageConfirmed;}
+	
+	public void notifySend() {
+		synchronized(lock){
+			lock.notify();	
+		}
+	}
 	
 	@Override
 	public void run() {
@@ -72,7 +79,7 @@ public class NetworkSend implements Runnable{
 			* TODO use uuid ??
 			*/
 			try {
-				this.wait();
+				lock.wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

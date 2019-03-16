@@ -43,18 +43,14 @@ public class NetworkDocument extends CadDocument{
 			writer = new PrintWriter(socket.getOutputStream(), true);
 			reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		} catch (IOException e) {
-			e.printStackTrace();
 			return false;
 		}
 		if(ns == null) {		
 			// start a send thread
 			new Thread(ns = new NetworkSend(this, writer)).start();
 		}
-		
 		handshake();
-
-		ns.notify();
-		
+		ns.notifySend();
 		return true;
 	}
 	
@@ -64,7 +60,7 @@ public class NetworkDocument extends CadDocument{
 		
 		String message = clientConnectionRequestMessage.serializeAsString();
 		
-		writer.println("message");
+		writer.println(message);
 	}
 	
 	public boolean receive() {
