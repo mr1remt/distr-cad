@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public class ClientConnectionRequest extends UniqueMessage {
 
-	private static UUID uuid = UUID.fromString("979fde02-de91-4fe1-bd21-4a6253758218");
+	private static UUID uuid = UUID.fromString("e15150ba-fc69-4526-b7d2-ffec7d97bcd5");
 	
 	private String ID;
 	

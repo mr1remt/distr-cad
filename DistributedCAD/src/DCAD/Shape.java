@@ -1,15 +1,26 @@
 package DCAD;
 
-final class Shape {
+public final class Shape {
 	private String type;
+	
+	public Shape() {
+	}
 
-	private Shape(String type) {
+	public Shape(String type) {
 		this.type = type;
 	}
 
 	@Override
 	public String toString() {
 		return type;
+	}
+	
+	public String getType() {
+		return type;
+	}
+	
+	public void setType(String t) {
+		this.type = t;
 	}
 
 	public static Shape OVAL = new Shape("OVAL");

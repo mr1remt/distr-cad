@@ -3,7 +3,7 @@ package se.his.drts.message;
 import java.util.UUID;
 
 public class ConnectionRequest extends UniqueMessage {
-	private static UUID uuid = UUID.fromString("979fde02-de91-4fe1-bd21-4a6253758218");
+	private static UUID uuid = UUID.fromString("eff23d4d-325d-4f1d-b7b9-b9811e97a510");
 	
 	private String ID;
 	

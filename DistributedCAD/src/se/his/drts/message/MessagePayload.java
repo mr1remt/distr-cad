@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -29,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author melj
  *
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class MessagePayload implements Comparable<MessagePayload> {
 	/** The purpose of this class is to provide an exception that can be handled in the
 	 * application. Essentially, the application should be able to rake corrective action.

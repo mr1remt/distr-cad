@@ -1,6 +1,7 @@
 package se.his.drts.message;
 
 import java.math.BigInteger;
+import java.util.Random;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
@@ -49,20 +50,29 @@ public class UniqueMessage extends MessagePayload {
 	private static BigInteger nextSubIdentity = BigInteger.ONE;
 	private static UUID uuid = UUID.fromString("32eb76f7-e72b-4fa5-ad02-95d92115c45d");
 	private BigInteger subIdentity;
+	
+	// Randomly generated identifier for each client request, used for caching
+	private long instanceID;
+	
 	protected UniqueMessage() {
-		super(UniqueMessage.uuid);
-		synchronized(UniqueMessage.nextSubIdentity) {
-			this.subIdentity = UniqueMessage.nextSubIdentity;
-			UniqueMessage.nextSubIdentity = UniqueMessage.nextSubIdentity.add(BigInteger.ONE);
-		}
+		this(UniqueMessage.uuid);
 	}
+	
 	protected UniqueMessage(UUID uuid) {
 		super(uuid);
 		synchronized(UniqueMessage.nextSubIdentity) {
 			this.subIdentity = UniqueMessage.nextSubIdentity;
 			UniqueMessage.nextSubIdentity = UniqueMessage.nextSubIdentity.add(BigInteger.ONE);
 		}
+		instanceID = new Random().nextLong();
 	}
+	
+	protected UniqueMessage(UUID uuid, UniqueMessage idCopy) {
+		super(uuid);
+		instanceID = idCopy.instanceID;
+		subIdentity = idCopy.subIdentity;
+	}
+	
 	public final BigInteger getSubIdentity() {
 		return subIdentity;
 	}
@@ -70,4 +80,9 @@ public class UniqueMessage extends MessagePayload {
 	public final MessageIdentity getMessageIdentity() {
 		return new MessageIdentity(this.getUuid(),this.subIdentity);
 	}
+
+	public long getInstanceID() {
+		return instanceID;
+	}
+	
 }

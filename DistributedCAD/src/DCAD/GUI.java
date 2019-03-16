@@ -31,7 +31,7 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 	JButton whiteButton = new JButton("White");
 	JButton pinkButton = new JButton("Pink");
 
-	private GObject template = new GObject(Shape.OVAL, Color.RED, 363, 65, 25, 25);
+	private GObject template = new GObject(Shape.OVAL, GColor.RED, 363, 65, 25, 25);
 	private GObject current = null;
 	
 	private CadDocument doc;
@@ -165,15 +165,15 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 		}else if (e.getSource() == filledRectangleButton) {
 			template.setShape(Shape.FILLED_RECTANGLE);
 		}else if (e.getSource() == redButton) {
-			template.setColor(Color.RED);
+			template.setColor(GColor.RED);
 		}else if (e.getSource() == blueButton) {
-			template.setColor(Color.BLUE);
+			template.setColor(GColor.BLUE);
 		}else if (e.getSource() == greenButton) {
-			template.setColor(Color.GREEN);
+			template.setColor(GColor.GREEN);
 		}else if (e.getSource() == whiteButton) {
-			template.setColor(Color.WHITE);
+			template.setColor(GColor.WHITE);
 		}else if (e.getSource() == pinkButton) {
-			template.setColor(Color.PINK);
+			template.setColor(GColor.PINK);
 		}
 		repaint();
 	}
