@@ -5,7 +5,6 @@ import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Timer;
@@ -19,11 +18,18 @@ import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
 import org.jgroups.util.Util;
 
+import DCAD.GObject;
 import se.his.drts.message.BullyAnswerMessage;
 import se.his.drts.message.BullyCoordinatorMessage;
 import se.his.drts.message.BullyElectionMessage;
+import se.his.drts.message.ClientResponseMessage;
+import se.his.drts.message.DeleteObjectRequest;
+import se.his.drts.message.DrawObjectRequest;
 import se.his.drts.message.FrontendAnnouncement;
 import se.his.drts.message.MessagePayload;
+import se.his.drts.message.RetrieveObjectsRequest;
+import se.his.drts.message.TransferStateMessage;
+import se.his.drts.message.UniqueMessage;
 
 public class ReplicaManager extends ReceiverAdapter {
 	
