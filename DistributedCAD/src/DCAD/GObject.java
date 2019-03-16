@@ -2,11 +2,11 @@ package DCAD;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.util.UUID;
+import java.util.Random;
 
 public class GObject {
 
-	private UUID uuid;
+	private long id;
 	
 	private Shape s;
 	private Color c;
@@ -22,7 +22,7 @@ public class GObject {
 		this.y = y;
 		this.width = width;
 		this.height = height;
-		this.uuid = UUID.randomUUID();
+		this.id = new Random().nextLong();
 	}
 
     public void setShape(Shape s) {this.s = s;}
@@ -34,8 +34,8 @@ public class GObject {
     public int getX() {return x;}
     public int getY() {return y;}
     
-    public void setUuid(UUID uuid) {this.uuid = uuid;}
-    public UUID getUuid() { return uuid;}
+    public void setID(long id) {this.id = id;}
+    public long getID() { return id;}
     
 	public void draw(Graphics g) {
 		g.setColor(c);

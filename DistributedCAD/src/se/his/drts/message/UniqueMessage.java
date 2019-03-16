@@ -1,6 +1,7 @@
 package se.his.drts.message;
 
 import java.math.BigInteger;
+import java.util.Random;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreType;

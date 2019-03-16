@@ -120,7 +120,7 @@ public class NetworkDocument extends CadDocument{
 
 		// find the object if it already exists and remove it
 		for (GObject go : this) {
-			if (go.getUuid().equals(object.getUuid())) {
+			if (go.getID() == object.getID()) {
 				objectList.remove(go);
 			}
 		}
@@ -129,7 +129,7 @@ public class NetworkDocument extends CadDocument{
 	public void LocalAddGObject(GObject object) { 
 		
 		for (GObject go : this) {
-			if (go.getUuid().equals(object.getUuid())) {
+			if (go.getID() == object.getID()) {
 				// if object already exists
 				return;
 			}
