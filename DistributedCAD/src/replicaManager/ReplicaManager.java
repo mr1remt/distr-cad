@@ -83,7 +83,7 @@ public class ReplicaManager extends ReceiverAdapter {
 		
 		System.out.println(m);
 		
-		// TODO: Message handling
+		// Message handling
 		
 		// Receive message and parse it
 		Optional<MessagePayload> optMsg = MessagePayload.createMessage(m.getBuffer());
@@ -147,11 +147,76 @@ public class ReplicaManager extends ReceiverAdapter {
 			}
 		}
 		
-		// Client request: Fetch state
+		// Handle client requests
+		if (msg instanceof DrawObjectRequest
+				|| msg instanceof DeleteObjectRequest
+				|| msg instanceof RetrieveObjectsRequest) {
+			UniqueMessage request = (UniqueMessage) msg;
+			System.out.println("A client request has been received");
+			
+			if (frontend == null)
+				frontend = m.getSrc();
+			
+			// Save the CAD state in case we need to revert
+			// CADState backupState = new CADState(state);
+			
+			// First, check if we've already processed this message
+			byte[] cache = state.hasResponse(request);
+			if (cache != null) {
+				// If so, just resend the message
+				try {
+					channel.send(frontend, cache);
+				}catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			
+			// Execute request
+			ClientResponseMessage response = new ClientResponseMessage(request, false);
+			if (request instanceof DrawObjectRequest) {
+				
+				// Add a new object to the state
+				state.addGObject(((DrawObjectRequest) request).getObject());
+				response.setOperationSuccess(true);
+				
+			}else if (request instanceof DeleteObjectRequest) {
+				
+				// Remove an object by its instance identifier
+				state.removeGObject(((DeleteObjectRequest) request).getGObjectID());
+				response.setOperationSuccess(true);
+				
+			}else if (request instanceof RetrieveObjectsRequest) {
+				
+				// Return a filtered list of all objects
+				List<GObject> activeGObjects = state.getActiveGObjects();
+				response.setObjectList(activeGObjects);
+				response.setOperationSuccess(true);
+			}
+			
+			// Cache the response in case it doesn't arrive
+			state.cacheResponse(response);
+			
+			// Update the backup RMs with the new state
+			TransferStateMessage stateTransferMsg = new TransferStateMessage(state);
+			try {
+				channel.send(null, stateTransferMsg.serialize());
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			// Send the response to the frontend
+			try {
+				channel.send(frontend, response.serialize());
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 		
-		// Client request: Add GObject
-		
-		// Client request: Remove GObject
+		// Handle state updates
+		if (msg instanceof TransferStateMessage
+				&& !m.getSrc().equals(channel.getAddress())) {
+			this.state = ((TransferStateMessage) msg).getState();
+		}
 	}
 	
 	/**

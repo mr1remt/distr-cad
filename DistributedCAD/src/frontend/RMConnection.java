@@ -11,8 +11,12 @@ import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
 import org.jgroups.util.Util;
 
+import DCAD.GColor;
+import DCAD.GObject;
+import DCAD.Shape;
 import se.his.drts.message.BullyCoordinatorMessage;
-import se.his.drts.message.DrawObject;
+import se.his.drts.message.ClientResponseMessage;
+import se.his.drts.message.DrawObjectRequest;
 import se.his.drts.message.FrontendAnnouncement;
 import se.his.drts.message.MessagePayload;
 
@@ -48,12 +52,11 @@ public class RMConnection extends ReceiverAdapter {
 			// Set 'primary' equal to the sender
 			primary = m.getSrc();
 			System.out.println("Node " + primary.toString() + " registered as primary");
+			
+		}else if (msg instanceof ClientResponseMessage) {
+			
+			// TODO: Forward response to the correct client
 		}
-		else if (msg instanceof DrawObject) {
-			//TODO send message to the clients 
-		}
-		
-		
 	}
 
 	@Override
@@ -65,6 +68,14 @@ public class RMConnection extends ReceiverAdapter {
 		
 		try {
 			channel.send(new Message(null, null, fa.serialize()));
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		// Test, Send a client request to add a GObject
+		GObject testObj = new GObject(Shape.LINE, GColor.BLACK, 0, 1, 1, 1);
+		try {
+			channel.send(primary, new DrawObjectRequest(testObj).serialize());
 		}catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -8,10 +8,10 @@ import java.net.Socket;
 import java.util.Optional;
 
 import se.his.drts.message.ClientConnectionRequest;
-import se.his.drts.message.DrawObject;
-import se.his.drts.message.FetchState;
+import se.his.drts.message.DeleteObjectRequest;
+import se.his.drts.message.DrawObjectRequest;
 import se.his.drts.message.MessagePayload;
-import se.his.drts.message.RemoveObject;
+import se.his.drts.message.RetrieveObjectsRequest;
 
 public class ClientConnection implements Runnable {
 	
@@ -63,12 +63,15 @@ public class ClientConnection implements Runnable {
 			}
 			
 		}
-		else if (messagePayload instanceof DrawObject || messagePayload instanceof RemoveObject || messagePayload instanceof FetchState) {			
+		else if (messagePayload instanceof DrawObjectRequest
+				|| messagePayload instanceof DeleteObjectRequest
+				|| messagePayload instanceof RetrieveObjectsRequest) {			
 			sendMessageRM(messagePayload);
 		}
 		
 		return true;
 	}
+	
 	public void sendMessageClient(MessagePayload mp) {
 		//TODO for sending a reply message from the replica manager to the client
 		
@@ -85,9 +88,6 @@ public class ClientConnection implements Runnable {
 		/*TODO if the replica manager is available then send a message to the client confirming 
 		 * that the message will be processed and that it can continue sending messages 
 		 * */
-		
-		
-		
 	}
 
 }

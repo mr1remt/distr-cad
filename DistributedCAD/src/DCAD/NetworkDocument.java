@@ -5,14 +5,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Optional;
 
 import se.his.drts.message.ClientConnectionRequest;
-import se.his.drts.message.ConnectionRequest;
-import se.his.drts.message.DrawObject;
+import se.his.drts.message.DrawObjectRequest;
 import se.his.drts.message.MessageConfirmed;
 import se.his.drts.message.MessagePayload;
 import se.his.drts.message.RemoveObject;
@@ -89,10 +87,13 @@ public class NetworkDocument extends CadDocument{
 		
 		MessagePayload messagePayload = mp.get();
 		
-		if (messagePayload instanceof DrawObject) {			
-			DrawObject drawObjectMessage = (DrawObject) messagePayload;
+
+		if (messagePayload instanceof DrawObjectRequest) {
+			//TODO add message
 			
-			LocalAddGObject(drawObjectMessage.getGObject());
+			DrawObjectRequest drawObjectMessage = (DrawObjectRequest) messagePayload;
+			
+			LocalAddGObject(drawObjectMessage.getObject());
 		}
 		else if (messagePayload instanceof RemoveObject) {			
 			RemoveObject removeObjectMessage = (RemoveObject) messagePayload;
@@ -148,7 +149,7 @@ public class NetworkDocument extends CadDocument{
 		}
 		
 		//send a message with the object that should be added
-		DrawObject drawObjectMessage = new DrawObject(object);		
+		DrawObjectRequest drawObjectMessage = new DrawObjectRequest(object);		
 		addMessageToQueue(drawObjectMessage);
 	}
 
