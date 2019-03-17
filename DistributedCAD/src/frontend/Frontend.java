@@ -61,6 +61,10 @@ public class Frontend {
 	public void registerNewClient(String clientID, ClientConnection client) {
 		clientList.put(clientID, client);
 	}
+	
+	public void unregisterClient(ClientConnection client) {
+		clientList.remove(client.getClientID(), client)
+	}
 
 	/**
 	 * Forward the message 'msg' to the correct client if we know who they are

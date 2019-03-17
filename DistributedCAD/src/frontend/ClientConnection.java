@@ -46,13 +46,7 @@ public class ClientConnection implements Runnable {
 		if (!(connMsg instanceof ClientConnectionRequest)) {
 			System.out.println("Client didn't send a ClientConnectionRequest, disconnecting client");
 			
-			try {
-				writer.close();
-				reader.close();
-				socket.close();
-			}catch (IOException e) {
-			}
-			
+			disconnect();
 			return;
 		}
 		
@@ -62,7 +56,7 @@ public class ClientConnection implements Runnable {
 		
 		// Main message receive loop
 		MessagePayload msg;
-		while((msg = receiveMessage()) != null) {
+		while(!socket.isClosed() && (msg = receiveMessage()) != null) {
 			
 			// If the message doesn't contain a return address, reply with a negative result
 			
@@ -104,8 +98,26 @@ public class ClientConnection implements Runnable {
 	 * @param mp
 	 */
 	public void sendMessageClient(MessagePayload mp) {
+		// First, make sure we can still send a response to this client
+		if (socket.isClosed()) disconnect();
+		
 		String message = mp.serializeAsString();
 		writer.println(message);
+	}
+	
+	private void disconnect() {
+		try {
+			writer.close();
+			reader.close();
+			socket.close();
+		}catch (IOException e) {
+		}
+		
+		Frontend.frontend.unregisterClient(this);
+	}
+	
+	public String getClientID() {
+		return clientID;
 	}
 
 }
