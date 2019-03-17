@@ -33,6 +33,23 @@ public class RMConnection extends ReceiverAdapter {
 		channel.setReceiver(this);
 		channel.connect("CAD-Service");
 	}
+	
+	/**
+	 * Send a client message to the primary replica manager. Returns true if the message was successfully sent
+	 * @param msg
+	 * @return
+	 */
+	public boolean send(MessagePayload msg) {
+		if (primary == null) return false;
+		
+		try {
+			channel.send(primary, msg.serialize());
+			return true;
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 
 	@Override
 	public void receive(Message m) {
@@ -56,6 +73,7 @@ public class RMConnection extends ReceiverAdapter {
 		}else if (msg instanceof ClientResponseMessage) {
 			
 			// TODO: Forward response to the correct client
+			Frontend.frontend.forwardResponse((ClientResponseMessage) msg);
 		}
 	}
 
@@ -73,7 +91,7 @@ public class RMConnection extends ReceiverAdapter {
 		}
 		
 		// Test, Send a client request to add a GObject
-		GObject testObj = new GObject(Shape.LINE, GColor.BLACK, 0, 1, 1, 1);
+		GObject testObj = new GObject(Shape.LINE, GColor.WHITE, 0, 1, 1, 1);
 		try {
 			channel.send(primary, new DrawObjectRequest(testObj).serialize());
 		}catch (Exception e) {
@@ -84,10 +102,6 @@ public class RMConnection extends ReceiverAdapter {
 	@Override
 	public void getState(OutputStream os) throws Exception {
 		Util.objectToStream(null, new DataOutputStream(os));
-	}
-
-	public void send() {
-		
 	}
 	
 }
