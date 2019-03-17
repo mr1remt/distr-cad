@@ -1,40 +1,48 @@
 package DCAD;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
-import se.his.drts.message.MessagePayload;
+import se.his.drts.message.UniqueMessage;
 
 public class NetworkSend implements Runnable{
 
-	private NetworkDocument nd;
 	private PrintWriter writer;
-	private LinkedList<MessagePayload> messagesToSend = new LinkedList<MessagePayload>();
-	private Object lock = new Object();
+	private LinkedList<UniqueMessage> messagesToSend = new LinkedList<UniqueMessage>();
+	private ArrayList<UniqueMessage> messagesss = new ArrayList<>();
+	private final Object waitNotifyLock = new Object();
+	private final Object isClosedLock = new Object();
 	
-	//TODO use uuid?
-	private boolean messageConfirmed;
+	private UniqueMessage messageConfirmed;
+	private boolean socketIsClosed = false;
 	
-	public NetworkSend(NetworkDocument nd, PrintWriter writer) {
-		this.nd = nd;
+	public NetworkSend(PrintWriter writer) {
 		this.writer = writer;
-		
-		writer.println("sss");
 	}
 	
-	public boolean isMessageConfirmed() {return messageConfirmed;}
-	public void setMessageConfirmed(boolean messageConfirmed) {this.messageConfirmed = messageConfirmed;}
+	public UniqueMessage getMessageConfirmed() {return messageConfirmed;}
+	public void setMessageConfirmed(UniqueMessage messageConfirmed) {this.messageConfirmed = messageConfirmed;}
+	
+	public boolean socketIsClosed() {
+		synchronized (isClosedLock) {return socketIsClosed;}
+	}
+	public void setSocketIsClosed(boolean isClosed) {
+		synchronized (isClosedLock) {this.socketIsClosed = isClosed;}
+	}
+	
+	public void setWriter(PrintWriter writer) {this.writer = writer;}
 	
 	public void notifySend() {
-		synchronized(lock){
-			lock.notify();	
+		synchronized(waitNotifyLock){
+			waitNotifyLock.notify();	
 		}
 	}
 	
 	@Override
 	public void run() {
 		while(true) {
-			if (messageAvailable()) {
+			if (messageAvailable() && !(socketIsClosed())) {
 				sendMessage();
 			}
 			else {
@@ -56,7 +64,13 @@ public class NetworkSend implements Runnable{
 		return false;
 	}
 	
-	public void addMessageToSend(MessagePayload mp) {
+	public void addMessageToSendFirst(UniqueMessage mp) {
+		synchronized (messagesToSend) {
+			messagesToSend.addFirst(mp);
+		}
+	}
+	
+	public void addMessageToSend(UniqueMessage mp) {
 		synchronized (messagesToSend) {
 			messagesToSend.add(mp);
 		}
@@ -64,30 +78,35 @@ public class NetworkSend implements Runnable{
 
 	public boolean sendMessage() { 
 				
-		MessagePayload messagePayload = null;
+		UniqueMessage uniqueMessage = null;
 		
 		synchronized (messagesToSend) {
-			messagePayload = messagesToSend.removeFirst();
+			uniqueMessage = (UniqueMessage) messagesToSend.removeFirst();
 		}
-		String message = messagePayload.serializeAsString();
+		String message = uniqueMessage.serializeAsString();
 		
 		while(true) {
+System.out.println("sending message: " + uniqueMessage);
 			writer.println(message);
 			
-			/* wait for an acknowledgement from the front end that the message has been sent on to the replica 
-			* managers so that the client can continue sending messages 
-			* TODO use uuid ??
-			*/
+			// wait for an acknowledgement from the front end that the message has been sent  
+			// on to the replica managers so that the client can continue sending messages
+			
 			try {
-				lock.wait();
+				synchronized (waitNotifyLock) {
+					waitNotifyLock.wait(1000);
+				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			if (isMessageConfirmed()) {
-				setMessageConfirmed(false);
+			if (getMessageConfirmed().getInstanceID() == uniqueMessage.getInstanceID()) {
+				setMessageConfirmed(null);
 				break;
 			}
-			
+			else if (socketIsClosed()){
+				addMessageToSendFirst(uniqueMessage);
+				break;
+			}
 		}
 		return true;
 	}
