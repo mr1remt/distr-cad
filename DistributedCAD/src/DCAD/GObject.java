@@ -45,6 +45,9 @@ public class GObject {
     public void setID(long id) {this.id = id;}
     public long getID() { return id;}
     
+    public boolean isActive() {return active;}
+	public void setActive(boolean active) {this.active = active;}
+    
 	public void draw(Graphics g) {
 		g.setColor(c.toColor());
 		int drawX = x, drawY = y, drawWidth = width, drawHeight = height;
@@ -76,13 +79,5 @@ public class GObject {
 		}else if (s.toString().compareTo(Shape.FILLED_OVAL.toString()) == 0) {
 			g.fillOval(drawX, drawY, drawWidth, drawHeight);
 		}
-	}
-
-	public boolean isActive() {
-		return active;
-	}
-
-	public void setActive(boolean active) {
-		this.active = active;
 	}
 }
