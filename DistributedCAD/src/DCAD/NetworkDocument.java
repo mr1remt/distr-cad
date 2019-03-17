@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+import org.jgroups.stack.GossipData;
+
 import se.his.drts.message.ClientConnectionRequest;
 import se.his.drts.message.ClientResponseMessage;
 import se.his.drts.message.DeleteObjectRequest;
@@ -37,9 +39,10 @@ public class NetworkDocument extends CadDocument implements Runnable{
 		this.serverAddress = serverAddress;
 		this.serverPort = serverPort;
 		
-		while (!(setupSocket(serverAddress, serverPort))) {}
-		
-		new Thread(this).start();
+		if (ns == null) {
+			// start a send thread if it doesn't already exist
+			new Thread(ns = new NetworkSend()).start();
+		}
 	}
 	
 	@Override
@@ -63,16 +66,12 @@ public class NetworkDocument extends CadDocument implements Runnable{
 			} catch (IOException e) {
 				return false;
 			}
-			
+			ns.setWriter(writer);
+
 			handshake();
-	
-			if (ns == null) {
-				// start a send thread if it doesn't already exist
-				new Thread(ns = new NetworkSend(writer)).start();
-			}
 			
-			RetrieveObjectsRequest retrieveObjectsRequest = new RetrieveObjectsRequest(); 
-			ns.addMessageToSendFirst(retrieveObjectsRequest);
+			ns.setSocketIsClosed(false);
+
 System.out.println("handshaked");
 			return true;
 		}
@@ -80,13 +79,14 @@ System.out.println("handshaked");
 	}
 	
 	public void handshake() {
-	
-		//TODO send name + id OR SOMETHING LIKE THAT to the front end 
 		ClientConnectionRequest clientConnectionRequestMessage = new ClientConnectionRequest(clientID);
 		
 		String message = clientConnectionRequestMessage.serializeAsString();
 		
 		writer.println(message);
+		
+		RetrieveObjectsRequest retrieveObjectsRequest = new RetrieveObjectsRequest(); 
+		ns.addMessageToSendFirst(retrieveObjectsRequest);
 	}
 	
 	public boolean receive() {
@@ -98,6 +98,7 @@ System.out.println("handshaked");
 			// frontend has crashed 
 			try {
 				ns.setSocketIsClosed(true);
+				ns.setWriter(null);
 				socket.close();
 System.out.println("frontend crash");
 			} catch (IOException e1) {
@@ -191,16 +192,26 @@ System.out.println("message received: " + uniqueMessage);
 	@Override
 	public void removeLastGObject() {
 				
-		DeleteObjectRequest deleteObjectRequest;
+		DeleteObjectRequest deleteObjectRequest = null;
 		
 		synchronized (objectList) {
-			objectList.get(objectList.size()-1).setActive(false);
-			deleteObjectRequest = new DeleteObjectRequest(objectList.get(objectList.size()-1).getID());		
+			if(objectList.size() < 1) {
+				return;
+			}
+			for (int i = objectList.size()-1; i >= 0; i--) {
+				GObject gobject = objectList.get(i);
+				if (gobject.isActive()) {
+					gobject.setActive(false);
+					deleteObjectRequest = new DeleteObjectRequest(gobject.getID());
+					break;
+				}
+			}				
 		}		
 		
 		//send a message with the object that should be deleted
-		ns.addMessageToSend(deleteObjectRequest);
-
+		if (deleteObjectRequest != null) {
+			ns.addMessageToSend(deleteObjectRequest);
+		}
 	}
 
 	@Override

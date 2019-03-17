@@ -10,35 +10,23 @@ public class NetworkSend implements Runnable{
 	private PrintWriter writer = null;
 	private LinkedList<UniqueMessage> messagesToSend = new LinkedList<UniqueMessage>();
 	private final Object waitNotifyLock = new Object();
-	private final Object isClosedLock = new Object();
-	private final Object writerLock = new Object();
 	
 	private UniqueMessage messageConfirmed;
-	private boolean socketIsClosed = false;
-	
+	private boolean socketIsClosed = true;
+		
 	public NetworkSend() {
 	}
-		
+	
 	public UniqueMessage getMessageConfirmed() {return messageConfirmed;}
 	public void setMessageConfirmed(UniqueMessage messageConfirmed) {this.messageConfirmed = messageConfirmed;}
 	
-	public boolean socketIsClosed() {
-		synchronized (isClosedLock) {return socketIsClosed;}
-	}
-	public void setSocketIsClosed(boolean isClosed) {
-		synchronized (isClosedLock) {this.socketIsClosed = isClosed;}
-	}
+	public boolean socketIsClosed() {return socketIsClosed;}
+	public void setSocketIsClosed(boolean isClosed) {this.socketIsClosed = isClosed;}
 	
-	public void setWriter(PrintWriter writer) {
-		synchronized (writerLock) {
-			this.writer = writer;
-		}
-	}
+	public void setWriter(PrintWriter writer) {this.writer = writer;}
 	public boolean writerExists() {
-		synchronized (writerLock) {
-			if (writer != null) {
+		if (writer != null) {
 			return true;
-			}
 		}
 		return false;
 	}
@@ -85,22 +73,23 @@ public class NetworkSend implements Runnable{
 		}
 	}
 
-	public boolean sendMessage() { 
+	public void sendMessage() { 
 				
 		UniqueMessage uniqueMessage = null;
 		
-		synchronized (messagesToSend) {
-			uniqueMessage = (UniqueMessage) messagesToSend.removeFirst();
-		}
-		String message = uniqueMessage.serializeAsString();
-		
 		while(true) {
+			synchronized (messagesToSend) {
+				uniqueMessage = (UniqueMessage) messagesToSend.removeFirst();
+			}
+			String message = uniqueMessage.serializeAsString();
+		
 			if(writerExists()){
 System.out.println("sending message: " + uniqueMessage);
 				writer.println(message);
 			}
 			else {
-				continue;
+				addMessageToSendFirst(uniqueMessage);
+				break;
 			}
 			
 			// wait for an acknowledgement from the front end that the message has been sent  
@@ -108,7 +97,7 @@ System.out.println("sending message: " + uniqueMessage);
 			
 			try {
 				synchronized (waitNotifyLock) {
-					waitNotifyLock.wait(1000);
+					waitNotifyLock.wait(500);
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -121,7 +110,9 @@ System.out.println("sending message: " + uniqueMessage);
 				addMessageToSendFirst(uniqueMessage);
 				break;
 			}
+			else {
+				addMessageToSendFirst(uniqueMessage);
+			}
 		}
-		return true;
 	}
 }
