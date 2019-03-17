@@ -63,7 +63,7 @@ public class Frontend {
 	}
 	
 	public void unregisterClient(ClientConnection client) {
-		clientList.remove(client.getClientID(), client)
+		clientList.remove(client.getClientID(), client);
 	}
 
 	/**
