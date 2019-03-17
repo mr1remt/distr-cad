@@ -23,5 +23,10 @@ public class TransferStateMessage extends MessagePayload {
 	public final CADState getState() {
 		return state;
 	}
+	
+	@Override
+	public String toString() {
+		return "TransferStateRequest";
+	}
 
 }
