@@ -20,6 +20,7 @@ public class NetworkDocument extends CadDocument{
 	private Socket socket;
 	private PrintWriter writer;
 	private BufferedReader reader;
+	private String clientID;
 	
 	private NetworkSend ns;
 	
@@ -43,6 +44,9 @@ public class NetworkDocument extends CadDocument{
 		} catch (IOException e) {
 			return false;
 		}
+		
+		clientID = getClientID(socket);
+		
 		if(ns == null) {		
 			// start a send thread
 			new Thread(ns = new NetworkSend(this, writer)).start();
@@ -54,7 +58,7 @@ public class NetworkDocument extends CadDocument{
 	
 	public void handshake() {
 		//TODO send name + id OR SOMETHING LIKE THAT to the front end 
-		ClientConnectionRequest clientConnectionRequestMessage = new ClientConnectionRequest(socket.getInetAddress().toString() + socket.getLocalPort());
+		ClientConnectionRequest clientConnectionRequestMessage = new ClientConnectionRequest(clientID);
 		
 		String message = clientConnectionRequestMessage.serializeAsString();
 		
@@ -174,5 +178,9 @@ public class NetworkDocument extends CadDocument{
 	//TODO maybe something can go wrong if removing/ adding during iteration
 	public Iterator<GObject> iterator() {
 		return objectList.iterator(); 
+	}
+	
+	public static String getClientID(Socket socket) {
+		return socket.getInetAddress().toString() + ":" + socket.getLocalPort();
 	}
 }
