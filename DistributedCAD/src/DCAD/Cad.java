@@ -13,5 +13,7 @@ public class Cad {
 
 	private Cad() {
 		cd = new NetworkDocument("127.0.0.1", 50000);
+		new Thread(cd).start();
+
 	}
 }
