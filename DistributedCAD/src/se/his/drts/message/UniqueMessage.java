@@ -52,7 +52,7 @@ public class UniqueMessage extends MessagePayload {
 	private BigInteger subIdentity;
 	
 	private String clientID;
-	
+
 	// Randomly generated identifier for each client request, used for caching
 	private long instanceID;
 	
