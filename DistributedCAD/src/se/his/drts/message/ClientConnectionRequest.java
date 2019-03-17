@@ -6,7 +6,7 @@ public class ClientConnectionRequest extends UniqueMessage {
 
 	private static UUID uuid = UUID.fromString("e15150ba-fc69-4526-b7d2-ffec7d97bcd5");
 	
-	private String ID;
+	private String clientID;
 	
 	protected ClientConnectionRequest() {
 		super(ClientConnectionRequest.uuid);
@@ -14,10 +14,10 @@ public class ClientConnectionRequest extends UniqueMessage {
 	
 	public ClientConnectionRequest(String ID) {
 		super(ClientConnectionRequest.uuid);
-		this.ID = ID;
+		this.clientID = ID;
 	}
-	public String getID() {
-		return ID;
+	public String getClientID() {
+		return clientID;
 	}
 	
 }
