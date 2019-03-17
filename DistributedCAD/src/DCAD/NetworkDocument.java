@@ -128,7 +128,7 @@ public class NetworkDocument extends CadDocument implements Runnable{
 			
 			// notify the "send" thread that it can continue to send messages and not overwrite them
 			ns.setMessageConfirmed(clientResponseMessage);
-			ns.notify();
+			ns.notifySend();
 		}
 		else {
 			//message not recognized
