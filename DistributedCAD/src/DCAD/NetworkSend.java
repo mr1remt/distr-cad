@@ -1,26 +1,24 @@
 package DCAD;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 import se.his.drts.message.UniqueMessage;
 
 public class NetworkSend implements Runnable{
 
-	private PrintWriter writer;
+	private PrintWriter writer = null;
 	private LinkedList<UniqueMessage> messagesToSend = new LinkedList<UniqueMessage>();
-	private ArrayList<UniqueMessage> messagesss = new ArrayList<>();
 	private final Object waitNotifyLock = new Object();
 	private final Object isClosedLock = new Object();
+	private final Object writerLock = new Object();
 	
 	private UniqueMessage messageConfirmed;
 	private boolean socketIsClosed = false;
 	
-	public NetworkSend(PrintWriter writer) {
-		this.writer = writer;
+	public NetworkSend() {
 	}
-	
+		
 	public UniqueMessage getMessageConfirmed() {return messageConfirmed;}
 	public void setMessageConfirmed(UniqueMessage messageConfirmed) {this.messageConfirmed = messageConfirmed;}
 	
@@ -31,8 +29,19 @@ public class NetworkSend implements Runnable{
 		synchronized (isClosedLock) {this.socketIsClosed = isClosed;}
 	}
 	
-	public void setWriter(PrintWriter writer) {this.writer = writer;}
-	
+	public void setWriter(PrintWriter writer) {
+		synchronized (writerLock) {
+			this.writer = writer;
+		}
+	}
+	public boolean writerExists() {
+		synchronized (writerLock) {
+			if (writer != null) {
+			return true;
+			}
+		}
+		return false;
+	}
 	public void notifySend() {
 		synchronized(waitNotifyLock){
 			waitNotifyLock.notify();	
@@ -86,8 +95,13 @@ public class NetworkSend implements Runnable{
 		String message = uniqueMessage.serializeAsString();
 		
 		while(true) {
+			if(writerExists()){
 System.out.println("sending message: " + uniqueMessage);
-			writer.println(message);
+				writer.println(message);
+			}
+			else {
+				continue;
+			}
 			
 			// wait for an acknowledgement from the front end that the message has been sent  
 			// on to the replica managers so that the client can continue sending messages
