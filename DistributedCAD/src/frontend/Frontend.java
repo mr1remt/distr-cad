@@ -59,11 +59,15 @@ public class Frontend {
 	 * @param client
 	 */
 	public void registerNewClient(String clientID, ClientConnection client) {
-		clientList.put(clientID, client);
+		synchronized (clientList) {
+			clientList.put(clientID, client);
+		}
 	}
 	
 	public void unregisterClient(ClientConnection client) {
-		clientList.remove(client.getClientID(), client);
+		synchronized (clientList) {
+			clientList.remove(client.getClientID(), client);
+		}
 	}
 
 	/**
@@ -71,7 +75,10 @@ public class Frontend {
 	 * @param msg
 	 */
 	public void forwardResponse(ClientResponseMessage msg) {
-		ClientConnection targetClient = clientList.get(msg.getClientID());
+		ClientConnection targetClient;
+		synchronized (clientList) {
+			targetClient = clientList.get(msg.getClientID());
+		}
 		if (targetClient == null) return;
 		
 		targetClient.sendMessageClient(msg);

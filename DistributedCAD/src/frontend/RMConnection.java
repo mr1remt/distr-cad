@@ -91,7 +91,7 @@ public class RMConnection extends ReceiverAdapter {
 		}
 		
 		// Test, Send a client request to add a GObject
-		GObject testObj = new GObject(Shape.LINE, GColor.BLACK, 0, 1, 1, 1);
+		GObject testObj = new GObject(Shape.LINE, GColor.WHITE, 0, 1, 1, 1);
 		try {
 			channel.send(primary, new DrawObjectRequest(testObj).serialize());
 		}catch (Exception e) {
