@@ -84,17 +84,14 @@ public class NetworkSend implements Runnable{
 			String message = uniqueMessage.serializeAsString();
 		
 			if(writerExists()){
-System.out.println("sending message: " + uniqueMessage);
 				writer.println(message);
 			}
 			else {
 				addMessageToSendFirst(uniqueMessage);
 				break;
 			}
-			
 			// wait for an acknowledgement from the front end that the message has been sent  
 			// on to the replica managers so that the client can continue sending messages
-			
 			try {
 				synchronized (waitNotifyLock) {
 					waitNotifyLock.wait(500);
