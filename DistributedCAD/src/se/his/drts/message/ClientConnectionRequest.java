@@ -20,4 +20,9 @@ public class ClientConnectionRequest extends UniqueMessage {
 		return clientID;
 	}
 	
+	@Override
+	public String toString() {
+		return "ClientConnectionRequest";
+	}
+	
 }

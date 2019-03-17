@@ -19,4 +19,9 @@ public class DeleteObjectRequest extends UniqueMessage {
 	public long getGObjectID() {
 		return objectID;
 	}
+	
+	@Override
+	public String toString() {
+		return "DeleteObjectRequest";
+	}
 }

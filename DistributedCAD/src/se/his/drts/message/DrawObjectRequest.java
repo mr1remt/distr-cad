@@ -21,4 +21,10 @@ public class DrawObjectRequest extends UniqueMessage {
 	public GObject getObject() {
 		return object;
 	}
+	
+	@Override
+	public String toString() {
+		return "DrawObjectRequest";
+	}
+	
 }

@@ -49,5 +49,10 @@ public class ClientResponseMessage extends UniqueMessage {
 	public void setObjectList(List<GObject> gObjectList) {
 		this.objectList = gObjectList;
 	}
+	
+	@Override
+	public String toString() {
+		return "ClientResponseMessage[operationSuccess: " + operationSuccess + "]";
+	}
 
 }

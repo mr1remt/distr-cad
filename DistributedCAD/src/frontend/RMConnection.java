@@ -53,7 +53,6 @@ public class RMConnection extends ReceiverAdapter {
 
 	@Override
 	public void receive(Message m) {
-		System.out.println(m);
 		
 		// Parse message
 		Optional<MessagePayload> optMsg = MessagePayload.createMessage(m.getBuffer());
@@ -62,6 +61,8 @@ public class RMConnection extends ReceiverAdapter {
 			return;
 		}
 		MessagePayload msg = optMsg.get();
+
+		System.out.println("Received " + msg.toString());
 		
 		// If it's a primary announcement message
 		if (msg instanceof BullyCoordinatorMessage) {

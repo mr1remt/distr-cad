@@ -12,7 +12,7 @@ public class BullyCoordinatorMessage extends UniqueMessage{
 	
 	@Override
 	public String toString() {
-		return "PrimaryAnnouncement";
+		return "BullyCoordinatorMessage";
 	}
 	
 }

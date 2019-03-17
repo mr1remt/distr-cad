@@ -8,4 +8,9 @@ public class RetrieveObjectsRequest extends UniqueMessage {
 	public RetrieveObjectsRequest() {
 		super(RetrieveObjectsRequest.subclassUUID);
 	}
+	
+	@Override
+	public String toString() {
+		return "RetrieveObjectsRequest";
+	}
 }
