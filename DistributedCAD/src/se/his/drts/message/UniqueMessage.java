@@ -50,7 +50,7 @@ public class UniqueMessage extends MessagePayload {
 	private static BigInteger nextSubIdentity = BigInteger.ONE;
 	private static UUID uuid = UUID.fromString("32eb76f7-e72b-4fa5-ad02-95d92115c45d");
 	private BigInteger subIdentity;
-	
+		
 	// Randomly generated identifier for each client request, used for caching
 	private long instanceID;
 	
@@ -83,6 +83,5 @@ public class UniqueMessage extends MessagePayload {
 
 	public long getInstanceID() {
 		return instanceID;
-	}
-	
+	}	
 }
