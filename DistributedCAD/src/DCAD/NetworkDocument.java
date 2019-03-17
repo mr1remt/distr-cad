@@ -5,56 +5,83 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 
 import se.his.drts.message.ClientConnectionRequest;
+import se.his.drts.message.ClientResponseMessage;
+import se.his.drts.message.DeleteObjectRequest;
 import se.his.drts.message.DrawObjectRequest;
 import se.his.drts.message.MessageConfirmed;
 import se.his.drts.message.MessagePayload;
-import se.his.drts.message.RemoveObject;
+import se.his.drts.message.RetrieveObjectsRequest;
+import se.his.drts.message.UniqueMessage;
 
-public class NetworkDocument extends CadDocument{
+public class NetworkDocument extends CadDocument implements Runnable{
 	
-	private Socket socket;
+	private Socket socket = null;
 	private PrintWriter writer;
 	private BufferedReader reader;
 	
-	private NetworkSend ns;
+	private NetworkSend ns = null;
 	
-	private LinkedList<GObject> objectList = new LinkedList<GObject>();
+	private String serverAddress;
+	private int serverPort;
+	
+	private ArrayList<GObject> objectList = new ArrayList<GObject>();
 	
 	public NetworkDocument(String serverAddress, int serverPort) {			
-		//set up socket
-		while(true) {
-			if (!(setupSocket(serverAddress, serverPort))) {
-				// if the front end is down then the client cannot connect and should try again
-				continue;
-			}
-			while(receive()) { }
-		}
+		this.serverAddress = serverAddress;
+		this.serverPort = serverPort;
+		
+		while (!(setupSocket(serverAddress, serverPort))) {}
+		
+		new Thread(this).start();
 	}
+	
+	@Override
+	public void run() {
+		//set up socket
+			while(true) {
+				if (!(setupSocket(serverAddress, serverPort))) {
+					// if the front end is down then the client cannot connect and should try again
+					continue;
+				}
+				while(receive()) { }
+			}
+	}
+	
 	public boolean setupSocket(String serverAddress, int serverPort) {
-		try {
-			socket = new Socket(serverAddress, serverPort);
-			writer = new PrintWriter(socket.getOutputStream(), true);
-			reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-		} catch (IOException e) {
-			return false;
+		if (socket == null || socket.isClosed()) {
+			try {
+				socket = new Socket(serverAddress, serverPort);
+				writer = new PrintWriter(socket.getOutputStream(), true);
+				reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			} catch (IOException e) {
+				return false;
+			}
+			
+			handshake();
+	
+			if (ns == null) {
+				// start a send thread if it doesn't already exist
+				new Thread(ns = new NetworkSend(writer)).start();
+			}
+			
+			RetrieveObjectsRequest retrieveObjectsRequest = new RetrieveObjectsRequest(); 
+			ns.addMessageToSendFirst(retrieveObjectsRequest);
+System.out.println("handshaked");
+			return true;
 		}
-		if(ns == null) {		
-			// start a send thread
-			new Thread(ns = new NetworkSend(this, writer)).start();
-		}
-		handshake();
-		ns.notifySend();
-		return true;
+		return false;
 	}
 	
 	public void handshake() {
-		//TODO send name + id OR SOMETHING LIKE THAT to the front end 
-		ClientConnectionRequest clientConnectionRequestMessage = new ClientConnectionRequest(socket.getInetAddress().toString() + socket.getLocalPort());
+		//TODO send name + id?? to the front end 
+		ClientConnectionRequest clientConnectionRequestMessage = new ClientConnectionRequest(
+				socket.getInetAddress().toString() + "_" + Integer.toString(socket.getLocalPort()));
 		
 		String message = clientConnectionRequestMessage.serializeAsString();
 		
@@ -62,7 +89,6 @@ public class NetworkDocument extends CadDocument{
 	}
 	
 	public boolean receive() {
-		// TODO receive an object that should be added to the list, or removed
 		
 		String message = "";
 		try {
@@ -70,7 +96,9 @@ public class NetworkDocument extends CadDocument{
 		} catch (IOException e) {
 			// frontend has crashed 
 			try {
+				ns.setSocketIsClosed(true);
 				socket.close();
+System.out.println("frontend crash");
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -78,62 +106,72 @@ public class NetworkDocument extends CadDocument{
 		}
 		
 		byte[] bytes = message.getBytes();
-		
 		Optional<MessagePayload> mp = MessagePayload.createMessage(bytes);
-		
-		MessagePayload messagePayload = mp.get();
-		
+		if(!mp.isPresent()) {
+			return true;
+		}
+		UniqueMessage uniqueMessage = (UniqueMessage) mp.get();
 
-		if (messagePayload instanceof DrawObjectRequest) {
-			//TODO add message
+System.out.println("message received: " + uniqueMessage);
+
+		if (uniqueMessage instanceof DrawObjectRequest) {
 			
-			DrawObjectRequest drawObjectMessage = (DrawObjectRequest) messagePayload;
+			DrawObjectRequest drawObjectMessage = (DrawObjectRequest) uniqueMessage;
 			
-			LocalAddGObject(drawObjectMessage.getObject());
+			localAddGObject(drawObjectMessage.getObject());
 		}
-		else if (messagePayload instanceof RemoveObject) {			
-			RemoveObject removeObjectMessage = (RemoveObject) messagePayload;
+		else if (uniqueMessage instanceof DeleteObjectRequest) {			
+			DeleteObjectRequest deleteObjectRequest = (DeleteObjectRequest) uniqueMessage;
 			
-			LocalRemoveGObject(removeObjectMessage.getGObject());
+			localRemoveGObject(deleteObjectRequest.getGObjectID());
 		}
-		else if(messagePayload instanceof MessageConfirmed) { // TODO change to some acc message -> for sendMessage method?
+		else if(uniqueMessage instanceof MessageConfirmed) { 
+			ClientResponseMessage clientResponseMessage = (ClientResponseMessage) uniqueMessage;
 			// notify the "send" thread that it can continue to send messages and not overwrite them
-			MessageConfirmed messageConfirmedMessage = (MessageConfirmed) messagePayload;
-			ns.setMessageConfirmed(true);
+			ns.setMessageConfirmed(clientResponseMessage);
 			ns.notify();
 		}
-		else {
+		else if (uniqueMessage instanceof ClientResponseMessage) {
+			ClientResponseMessage clientResponseMessage = (ClientResponseMessage) uniqueMessage;
 			
+			localAddGObjectList(clientResponseMessage.getObjectList());
+			
+		}
+		else {
+			//message not recognized
 		}
 		return true;
 	}
 
-	
-	public void addMessageToQueue(MessagePayload messagePayload) {
-		ns.addMessageToSend(messagePayload);
-		
-	}
-	public void LocalRemoveGObject(GObject object) { 
-
-		// find the object if it already exists and remove it
-		for (GObject go : this) {
-			if (go.getID() == object.getID()) {
-				objectList.remove(go);
-			}
+	public void localAddGObjectList(List<GObject> list) {
+		for (GObject go : list) {
+			localAddGObject(go);
 		}
 	}
 
-	public void LocalAddGObject(GObject object) { 
+	public void localAddGObject(GObject object) { 
 		
 		for (GObject go : this) {
 			if (go.getID() == object.getID()) {
-				// if object already exists
+				// if object already exists change Active to the newest version of the object
+				if (go.isActive()) {
+					go.setActive(object.isActive());
+				}
 				return;
 			}
 		}
-		// add if object is new
+		// if object is new then add
 		synchronized (objectList) {
 			objectList.add(object);
+		}
+	}
+	
+	public void localRemoveGObject(Long objectID) { 
+		// find the object if it already exists and remove it
+		for (GObject go : this) {
+			if (go.getID() == objectID) {
+				go.setActive(false);
+			}
 		}
 	}
 
@@ -146,21 +184,21 @@ public class NetworkDocument extends CadDocument{
 		
 		//send a message with the object that should be added
 		DrawObjectRequest drawObjectMessage = new DrawObjectRequest(object);		
-		addMessageToQueue(drawObjectMessage);
+		ns.addMessageToSend(drawObjectMessage);
 	}
 
 	@Override
 	public void removeLastGObject() {
-		
-		GObject removed = null;
+				
+		DeleteObjectRequest deleteObjectRequest;
 		
 		synchronized (objectList) {
-			removed = objectList.removeLast();
+			objectList.get(objectList.size()-1).setActive(false);
+			deleteObjectRequest = new DeleteObjectRequest(objectList.get(objectList.size()-1).getID());		
 		}		
 		
-		//send a message with the object that should be removed
-		RemoveObject removeObjectMessage = new RemoveObject(removed);		
-		addMessageToQueue(removeObjectMessage);
+		//send a message with the object that should be deleted
+		ns.addMessageToSend(deleteObjectRequest);
 
 	}
 
@@ -171,7 +209,6 @@ public class NetworkDocument extends CadDocument{
 		}
 	}
 	
-	//TODO maybe something can go wrong if removing/ adding during iteration
 	public Iterator<GObject> iterator() {
 		return objectList.iterator(); 
 	}
