@@ -2,12 +2,15 @@ package frontend;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.LinkedList;
 
 public class Frontend {
 	
 	private RMConnection rmConn;
 	
 	private ServerSocket serverSocket;
+	
+	private LinkedList<ClientConnection> clientConnections = new LinkedList<>();
 
 	public void connect() {
 		// Open TCP server socket
@@ -32,9 +35,10 @@ public class Frontend {
 		while (true) {
 			try {
 				// Create a new thread for every connected client
-				new Thread(new ClientConnection(
-					serverSocket.accept()
-				)).start();
+				ClientConnection client = new ClientConnection(serverSocket.accept());
+				clientConnections.add(client);
+				new Thread(client).start();
+				
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
