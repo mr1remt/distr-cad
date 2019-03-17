@@ -10,13 +10,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.jgroups.stack.GossipData;
-
 import se.his.drts.message.ClientConnectionRequest;
 import se.his.drts.message.ClientResponseMessage;
 import se.his.drts.message.DeleteObjectRequest;
 import se.his.drts.message.DrawObjectRequest;
-import se.his.drts.message.MessageConfirmed;
 import se.his.drts.message.MessagePayload;
 import se.his.drts.message.RetrieveObjectsRequest;
 import se.his.drts.message.UniqueMessage;
@@ -72,7 +69,6 @@ public class NetworkDocument extends CadDocument implements Runnable{
 			
 			ns.setSocketIsClosed(false);
 
-System.out.println("handshaked");
 			return true;
 		}
 		return false;
@@ -86,6 +82,7 @@ System.out.println("handshaked");
 		writer.println(message);
 		
 		RetrieveObjectsRequest retrieveObjectsRequest = new RetrieveObjectsRequest(); 
+		retrieveObjectsRequest.setClientID(clientID);
 		ns.addMessageToSendFirst(retrieveObjectsRequest);
 	}
 	
@@ -100,7 +97,6 @@ System.out.println("handshaked");
 				ns.setSocketIsClosed(true);
 				ns.setWriter(null);
 				socket.close();
-System.out.println("frontend crash");
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -114,8 +110,6 @@ System.out.println("frontend crash");
 		}
 		UniqueMessage uniqueMessage = (UniqueMessage) mp.get();
 
-System.out.println("message received: " + uniqueMessage);
-
 		if (uniqueMessage instanceof DrawObjectRequest) {
 			
 			DrawObjectRequest drawObjectMessage = (DrawObjectRequest) uniqueMessage;
@@ -127,17 +121,14 @@ System.out.println("message received: " + uniqueMessage);
 			
 			localRemoveGObject(deleteObjectRequest.getGObjectID());
 		}
-		else if(uniqueMessage instanceof MessageConfirmed) { 
-			ClientResponseMessage clientResponseMessage = (ClientResponseMessage) uniqueMessage;
-			// notify the "send" thread that it can continue to send messages and not overwrite them
-			ns.setMessageConfirmed(clientResponseMessage);
-			ns.notify();
-		}
-		else if (uniqueMessage instanceof ClientResponseMessage) {
+		else if(uniqueMessage instanceof ClientResponseMessage) { 
 			ClientResponseMessage clientResponseMessage = (ClientResponseMessage) uniqueMessage;
 			
 			localAddGObjectList(clientResponseMessage.getObjectList());
 			
+			// notify the "send" thread that it can continue to send messages and not overwrite them
+			ns.setMessageConfirmed(clientResponseMessage);
+			ns.notify();
 		}
 		else {
 			//message not recognized
@@ -146,8 +137,10 @@ System.out.println("message received: " + uniqueMessage);
 	}
 
 	public void localAddGObjectList(List<GObject> list) {
-		for (GObject go : list) {
-			localAddGObject(go);
+		if (list != null) {
+			for (GObject go : list) {
+				localAddGObject(go);
+			}
 		}
 	}
 
