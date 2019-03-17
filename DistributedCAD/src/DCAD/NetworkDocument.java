@@ -24,6 +24,7 @@ public class NetworkDocument extends CadDocument implements Runnable{
 	private Socket socket = null;
 	private PrintWriter writer;
 	private BufferedReader reader;
+	private String clientID;
 	
 	private NetworkSend ns = null;
 	
@@ -79,9 +80,9 @@ System.out.println("handshaked");
 	}
 	
 	public void handshake() {
-		//TODO send name + id?? to the front end 
-		ClientConnectionRequest clientConnectionRequestMessage = new ClientConnectionRequest(
-				socket.getInetAddress().toString() + "_" + Integer.toString(socket.getLocalPort()));
+	
+		//TODO send name + id OR SOMETHING LIKE THAT to the front end 
+		ClientConnectionRequest clientConnectionRequestMessage = new ClientConnectionRequest(clientID);
 		
 		String message = clientConnectionRequestMessage.serializeAsString();
 		
@@ -211,5 +212,9 @@ System.out.println("message received: " + uniqueMessage);
 	
 	public Iterator<GObject> iterator() {
 		return objectList.iterator(); 
+	}
+	
+	public static String getClientID(Socket socket) {
+		return socket.getInetAddress().toString() + ":" + socket.getLocalPort();
 	}
 }
