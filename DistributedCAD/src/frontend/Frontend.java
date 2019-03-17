@@ -2,15 +2,23 @@ package frontend;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.LinkedList;
+import java.util.HashMap;
+
+import se.his.drts.message.ClientResponseMessage;
 
 public class Frontend {
+	
+	public static Frontend frontend;
 	
 	private RMConnection rmConn;
 	
 	private ServerSocket serverSocket;
 	
-	private LinkedList<ClientConnection> clientConnections = new LinkedList<>();
+	private HashMap<String, ClientConnection> clientList;
+	
+	public Frontend() {
+		clientList = new HashMap<String, ClientConnection>();
+	}
 
 	public void connect() {
 		// Open TCP server socket
@@ -35,20 +43,40 @@ public class Frontend {
 		while (true) {
 			try {
 				// Create a new thread for every connected client
-				ClientConnection client = new ClientConnection(serverSocket.accept());
-				clientConnections.add(client);
-				new Thread(client).start();
+				new Thread(
+					new ClientConnection(serverSocket.accept(), rmConn)
+				).start();
 				
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 	}
+	
+	/**
+	 * Register a new client by it's clientID
+	 * @param clientID
+	 * @param client
+	 */
+	public void registerNewClient(String clientID, ClientConnection client) {
+		clientList.put(clientID, client);
+	}
+
+	/**
+	 * Forward the message 'msg' to the correct client if we know who they are
+	 * @param msg
+	 */
+	public void forwardResponse(ClientResponseMessage msg) {
+		ClientConnection targetClient = clientList.get(msg.getClientID());
+		if (targetClient == null) return;
+		
+		targetClient.sendMessageClient(msg);
+	}
 
 	public static void main(String[] args) {
-		Frontend f = new Frontend();
-		f.connect();
-		f.listenForClientConnections();
+		frontend = new Frontend();
+		frontend.connect();
+		frontend.listenForClientConnections();
 	}
 
 }
