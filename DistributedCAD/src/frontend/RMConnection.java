@@ -86,4 +86,8 @@ public class RMConnection extends ReceiverAdapter {
 		Util.objectToStream(null, new DataOutputStream(os));
 	}
 
+	public void send() {
+		
+	}
+	
 }
