@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+import org.omg.Messaging.SyncScopeHelper;
+
 import se.his.drts.message.ClientConnectionRequest;
 import se.his.drts.message.ClientResponseMessage;
 import se.his.drts.message.DeleteObjectRequest;
@@ -44,10 +46,11 @@ public class NetworkDocument extends CadDocument implements Runnable{
 	
 	@Override
 	public void run() {
-		//set up socket
 			while(true) {
+				//set up socket
 				if (!(setupSocket(serverAddress, serverPort))) {
-					// if the front end is down then the client cannot connect and should try again
+					// if the frontend is down, the client cannot connect and should try again, 
+					// skipping receive
 					continue;
 				}
 				while(receive()) { }
@@ -55,6 +58,7 @@ public class NetworkDocument extends CadDocument implements Runnable{
 	}
 	
 	public boolean setupSocket(String serverAddress, int serverPort) {
+		//create socket if it doesn't exist or is closed
 		if (socket == null || socket.isClosed()) {
 			try {
 				socket = new Socket(serverAddress, serverPort);
@@ -65,12 +69,12 @@ System.out.println("socket setup fail");
 				return false;
 			}
 			
+			//initialize client id which can be different depending on socket 
 			this.clientID = getClientID(socket);
-
-			ns.setWriter(writer);
-
+			
 			handshake();
 			
+			ns.setWriter(writer);
 			ns.setSocketIsClosed(false);
 System.out.println("socket set up");
 			return true;
@@ -79,12 +83,12 @@ System.out.println("socket set up");
 	}
 	
 	public void handshake() {
+		//send a message with this clientiID to frontend so that i can keep track of the correct clients
 		ClientConnectionRequest clientConnectionRequestMessage = new ClientConnectionRequest(clientID);
-		
 		String message = clientConnectionRequestMessage.serializeAsString();
-		
 		writer.println(message);
 		
+		//send a message via the networksend requesting all perviously drawn objects
 		RetrieveObjectsRequest retrieveObjectsRequest = new RetrieveObjectsRequest(); 
 		retrieveObjectsRequest.setClientID(clientID);
 		ns.addMessageToSendFirst(retrieveObjectsRequest);
@@ -101,7 +105,6 @@ System.out.println("handshaked");
 			try {
 System.out.println("crashed: " + message);
 				ns.setSocketIsClosed(true);
-				ns.setWriter(null);
 				socket.close();
 			} catch (IOException e1) {
 				e1.printStackTrace();
@@ -116,6 +119,7 @@ System.out.println("crashed: " + message);
 		}
 		UniqueMessage uniqueMessage = (UniqueMessage) mp.get();
 System.out.println("received " + uniqueMessage);
+		//when a client has drawn an object
 		if (uniqueMessage instanceof DrawObjectRequest) {
 			
 			DrawObjectRequest drawObjectMessage = (DrawObjectRequest) uniqueMessage;
@@ -132,8 +136,9 @@ System.out.println("received " + uniqueMessage);
 			
 			localAddGObjectList(clientResponseMessage.getObjectList());
 			
-			// notify the "send" thread that it can continue to send messages and not overwrite them
-			ns.setMessageConfirmed(clientResponseMessage);
+			//update the response message ns will read 
+			ns.addMessageConfirmed(clientResponseMessage);
+			// notify the "send" thread that it can continue the sending process
 			ns.notifySend();
 		}
 		else {
@@ -144,6 +149,7 @@ System.out.println("received " + uniqueMessage);
 
 	public void localAddGObjectList(List<GObject> list) {
 System.out.println("loc:addlist ");
+		//if the list is empty; do nothing, otherwise add all objects to the list
 		if (list != null) {
 System.out.print(" " + list.size());
 			for (GObject go : list) {
@@ -156,8 +162,10 @@ System.out.print(" " + list.size());
 System.out.println("loc:addobj");
 		for (GObject go : this) {
 			if (go.getID() == object.getID()) {
+System.out.println("object exists already");
 				// if object already exists change Active to the newest version of the object
 				if (go.isActive()) {
+System.out.println("object active changed from: " + go.isActive() + " to: " + object.isActive());
 					go.setActive(object.isActive());
 				}
 				return;
@@ -165,13 +173,14 @@ System.out.println("loc:addobj");
 		}
 		// if object is new then add
 		synchronized (objectList) {
+System.out.println("object added");
 			objectList.add(object);
 		}
 	}
 	
 	public void localRemoveGObject(Long objectID) { 
 System.out.println("loc:removeobj");
-		// find the object if it already exists and remove it
+		// find the object if it already exists and remove it by changing Active
 		for (GObject go : this) {
 			if (go.getID() == objectID) {
 				go.setActive(false);
@@ -181,12 +190,12 @@ System.out.println("loc:removeobj");
 
 	@Override
 	public void addGObject(GObject object) {
-		
+		//add the object locally
 		synchronized (objectList) {
 			objectList.add(object);
 		}
 		
-		//send a message with the object that should be added
+		//add a message with the object that should be added to the queue of messages to send
 		DrawObjectRequest drawObjectMessage = new DrawObjectRequest(object);		
 		ns.addMessageToSend(drawObjectMessage);
 System.out.println("addobj");
@@ -197,10 +206,11 @@ System.out.println("addobj");
 				
 		DeleteObjectRequest deleteObjectRequest = null;
 		
+		// if there are objects in the list then remove the last one by changeing the Active variable
 		synchronized (objectList) {
 			if(objectList.size() < 1) {
 				return;
-			}
+			} 
 			for (int i = objectList.size()-1; i >= 0; i--) {
 				GObject gobject = objectList.get(i);
 				if (gobject.isActive()) {
@@ -211,7 +221,7 @@ System.out.println("addobj");
 			}				
 		}		
 		
-		//send a message with the object that should be deleted
+		//add a message containing the object's ID of the object that should be deleted
 		if (deleteObjectRequest != null) {
 			ns.addMessageToSend(deleteObjectRequest);
 		}
