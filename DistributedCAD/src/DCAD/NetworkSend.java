@@ -10,16 +10,36 @@ public class NetworkSend implements Runnable{
 
 	private PrintWriter writer = null;
 	private LinkedList<UniqueMessage> messagesToSend = new LinkedList<UniqueMessage>();
+	private LinkedList<ClientResponseMessage> messagesConfirmed = new LinkedList<ClientResponseMessage>();
 	private final Object waitNotifyLock = new Object();
+	private final Object messagesConfirmedLock= new Object();
 	
-	private ClientResponseMessage messageConfirmed;
 	private boolean socketIsClosed = true;
 		
 	public NetworkSend() {
 	}
 	
-	public ClientResponseMessage getMessageConfirmed() {return messageConfirmed;}
-	public void setMessageConfirmed(ClientResponseMessage messageConfirmed) {this.messageConfirmed = messageConfirmed;}
+	public void addMessageConfirmed(ClientResponseMessage messageConfirmed) {
+		synchronized (messagesConfirmedLock) {
+			for (ClientResponseMessage crm : messagesConfirmed) {
+				if (crm.getInstanceID() == messageConfirmed.getInstanceID()) {
+					crm.setOperationSuccess(messageConfirmed.getOperationSuccess());
+					return;
+				}
+			}
+			messagesConfirmed.add(messageConfirmed);
+		}
+	}
+	public boolean requestSuccessful(long instanceID) {
+		synchronized (messagesConfirmedLock) {
+			for (ClientResponseMessage crm : messagesConfirmed) {
+				if (crm.getInstanceID() == instanceID && crm.getOperationSuccess()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 	
 	public boolean socketIsClosed() {return socketIsClosed;}
 	public void setSocketIsClosed(boolean isClosed) {this.socketIsClosed = isClosed;}
@@ -40,6 +60,7 @@ public class NetworkSend implements Runnable{
 	@Override
 	public void run() {
 		while(true) {
+			// send a message if there are messages to send and if the socket is open
 			if (messageAvailable() && !(socketIsClosed())) {
 				sendMessage();
 			}
@@ -61,7 +82,7 @@ public class NetworkSend implements Runnable{
 		}
 		return false;
 	}
-	
+	//add a message to the list at the FIRST position
 	public void addMessageToSendFirst(UniqueMessage mp) {
 		synchronized (messagesToSend) {
 			messagesToSend.addFirst(mp);
@@ -86,7 +107,7 @@ public class NetworkSend implements Runnable{
 		
 			if(writerExists()){
 				writer.println(message);
-				System.out.println("ns: sendm: " + message);
+System.out.println("ns: sendm: " + message);
 			}
 			else {
 				addMessageToSendFirst(uniqueMessage);
@@ -101,25 +122,17 @@ public class NetworkSend implements Runnable{
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			if (getMessageConfirmed() == null) {
-				addMessageToSendFirst(uniqueMessage);
+			if (requestSuccessful(uniqueMessage.getInstanceID())) {
 System.out.println("1");
 				break;
 			}
-			else if (getMessageConfirmed().getInstanceID() == uniqueMessage.getInstanceID() 
-					&& getMessageConfirmed().getOperationSuccess()) {
-System.out.println("2");
-
-				setMessageConfirmed(null);
-				break;
-			}
 			else if (socketIsClosed()){
-System.out.println("3");
+System.out.println("2");
 				addMessageToSendFirst(uniqueMessage);
 				break;
 			}
 			else {
-System.out.println("4");
+System.out.println("3");
 				addMessageToSendFirst(uniqueMessage);
 				try {
 					Thread.sleep(500);
