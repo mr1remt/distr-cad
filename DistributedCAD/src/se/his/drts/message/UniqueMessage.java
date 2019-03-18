@@ -86,6 +86,9 @@ public class UniqueMessage extends MessagePayload {
 	public long getInstanceID() {
 		return instanceID;
 	}
+	public void setInstanceID(long instanceID) {
+		this.instanceID = instanceID;
+	}
 
 	public String getClientID() {
 		return clientID;
