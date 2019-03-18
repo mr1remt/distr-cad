@@ -99,6 +99,7 @@ System.out.println("handshaked");
 		} catch (IOException e) {
 			// frontend has crashed 
 			try {
+System.out.println("crashed: " + message);
 				ns.setSocketIsClosed(true);
 				ns.setWriter(null);
 				socket.close();

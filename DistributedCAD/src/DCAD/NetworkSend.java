@@ -102,23 +102,31 @@ public class NetworkSend implements Runnable{
 				e.printStackTrace();
 			}
 			if (getMessageConfirmed() == null) {
+				addMessageToSendFirst(uniqueMessage);
+System.out.println("1");
 				break;
 			}
-			else if (getMessageConfirmed().getInstanceID() == uniqueMessage.getInstanceID() && getMessageConfirmed().getOperationSuccess()) {
+			else if (getMessageConfirmed().getInstanceID() == uniqueMessage.getInstanceID() 
+					&& getMessageConfirmed().getOperationSuccess()) {
+System.out.println("2");
+
 				setMessageConfirmed(null);
+				break;
+			}
+			else if (socketIsClosed()){
+System.out.println("3");
+				addMessageToSendFirst(uniqueMessage);
+				break;
+			}
+			else {
+System.out.println("4");
+				addMessageToSendFirst(uniqueMessage);
 				try {
 					Thread.sleep(500);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				break;
-			}
-			else if (socketIsClosed()){
-				addMessageToSendFirst(uniqueMessage);
-				break;
-			}
-			else {
-				addMessageToSendFirst(uniqueMessage);
+
 			}
 		}
 	}
