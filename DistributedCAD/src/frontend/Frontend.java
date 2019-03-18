@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.HashMap;
 
-import DCAD.GColor;
 import se.his.drts.message.ClientResponseMessage;
+import se.his.drts.message.MessagePayload;
 
 public class Frontend {
 	
@@ -83,6 +83,14 @@ public class Frontend {
 		if (targetClient == null) return;
 		
 		targetClient.sendMessageClient(msg);
+	}
+
+	/**
+	 * Send the message 'msg' to all connected clients
+	 * @param msg
+	 */
+	public void messageAllClients(MessagePayload msg) {
+		clientList.forEach((String id, ClientConnection client) -> client.sendMessageClient(msg));
 	}
 
 	public static void main(String[] args) {

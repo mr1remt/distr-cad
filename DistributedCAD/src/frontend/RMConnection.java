@@ -11,11 +11,9 @@ import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
 import org.jgroups.util.Util;
 
-import DCAD.GColor;
-import DCAD.GObject;
-import DCAD.Shape;
 import se.his.drts.message.BullyCoordinatorMessage;
 import se.his.drts.message.ClientResponseMessage;
+import se.his.drts.message.DeleteObjectRequest;
 import se.his.drts.message.DrawObjectRequest;
 import se.his.drts.message.FrontendAnnouncement;
 import se.his.drts.message.MessagePayload;
@@ -72,9 +70,22 @@ public class RMConnection extends ReceiverAdapter {
 			System.out.println("Node " + primary.toString() + " registered as primary");
 			
 		}else if (msg instanceof ClientResponseMessage) {
+			ClientResponseMessage response = (ClientResponseMessage) msg;
 			
-			// TODO: Forward response to the correct client
-			Frontend.frontend.forwardResponse((ClientResponseMessage) msg);
+			// Forward response to the correct client
+			Frontend.frontend.forwardResponse(response);
+			
+			// If this request added to the document, message all other connected clients
+			if (response.getDrawnObject() != null) {
+				DrawObjectRequest req = new DrawObjectRequest(response.getDrawnObject());
+				Frontend.frontend.messageAllClients(req);
+			}
+			
+			// If this request added deleted from the document, message all other connected clients
+			if (response.getDeletedObject() != 0) {
+				DeleteObjectRequest req = new DeleteObjectRequest(response.getDeletedObject());
+				Frontend.frontend.messageAllClients(req);
+			}
 		}
 	}
 

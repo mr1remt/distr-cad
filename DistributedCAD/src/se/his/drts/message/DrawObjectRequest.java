@@ -24,7 +24,7 @@ public class DrawObjectRequest extends UniqueMessage {
 	
 	@Override
 	public String toString() {
-		return "DrawObjectRequest";
+		return "DrawObjectRequest[object: " + object + "]";
 	}
 	
 }
