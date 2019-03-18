@@ -1,9 +1,11 @@
 package DCAD;
 
 import java.awt.Color;
+import java.io.Serializable;
 
-public class GColor {
-
+public class GColor implements Serializable {
+	private static final long serialVersionUID = -3468370885524679389L;
+	
 	public static final GColor RED		= new GColor(255, 0, 0);
 	public static final GColor GREEN	= new GColor(0, 255, 0);
 	public static final GColor BLUE		= new GColor(0, 0, 255);

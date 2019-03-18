@@ -315,6 +315,7 @@ public class ReplicaManager extends ReceiverAdapter {
 		if (view.size() == 1 && stateSynced == false) {
 			System.out.println("First RM, creating new state");
 			stateSynced = true;
+			primary = channel.getAddress();
 		}
 
 		// When we initially join, ask every other node for the state
@@ -352,6 +353,11 @@ public class ReplicaManager extends ReceiverAdapter {
 			}catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+		
+		// If we don't know who the primary is, start an election
+		if (primary == null) {
+			startElection();
 		}
 	}
 	

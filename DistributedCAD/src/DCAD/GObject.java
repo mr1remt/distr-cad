@@ -1,9 +1,12 @@
 package DCAD;
 
 import java.awt.Graphics;
+import java.io.Serializable;
 import java.util.Random;
 
-public class GObject {
+public class GObject implements Serializable {
+
+	private static final long serialVersionUID = -4000363049117064546L;
 
 	private long id;
 	
