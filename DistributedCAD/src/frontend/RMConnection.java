@@ -12,6 +12,7 @@ import org.jgroups.View;
 import org.jgroups.util.Util;
 
 import se.his.drts.message.BullyCoordinatorMessage;
+import se.his.drts.message.BullyElectionMessage;
 import se.his.drts.message.ClientResponseMessage;
 import se.his.drts.message.DeleteObjectRequest;
 import se.his.drts.message.DrawObjectRequest;
@@ -60,7 +61,7 @@ public class RMConnection extends ReceiverAdapter {
 		}
 		MessagePayload msg = optMsg.get();
 
-		System.out.println("Received " + msg.toString());
+		System.out.println("Received from RM " + msg.toString());
 		
 		// If it's a primary announcement message
 		if (msg instanceof BullyCoordinatorMessage) {

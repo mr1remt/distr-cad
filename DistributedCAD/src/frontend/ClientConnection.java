@@ -83,12 +83,16 @@ System.out.println("cc: " + msg);
 			e.printStackTrace();
 			return null;
 		}
+		
+		if (jsonMsg == null) return null;
 
 		Optional<MessagePayload> optMsg = MessagePayload.createMessage(jsonMsg.getBytes());
 		if (!optMsg.isPresent()) {
 			System.out.println("Failed to deserialize message");
 			return null;
 		}
+
+		System.out.println("Received from client " + optMsg.get().toString());
 		return optMsg.get();
 	}
 	
@@ -99,7 +103,8 @@ System.out.println("cc: " + msg);
 	public void sendMessageClient(MessagePayload mp) {
 		// First, make sure we can still send a response to this client
 		if (socket.isClosed()) disconnect();
-System.out.println(mp);
+		
+		System.out.println("Sending to client " + mp.toString());
 		String message = mp.serializeAsString();
 		writer.println(message);
 	}

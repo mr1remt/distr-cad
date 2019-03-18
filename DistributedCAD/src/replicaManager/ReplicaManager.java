@@ -152,7 +152,7 @@ public class ReplicaManager extends ReceiverAdapter {
 				|| msg instanceof DeleteObjectRequest
 				|| msg instanceof RetrieveObjectsRequest) {
 			UniqueMessage request = (UniqueMessage) msg;
-			System.out.println("A client request has been received");
+			System.out.println("A client request has been received: " + request);
 			
 			if (frontend == null)
 				frontend = m.getSrc();
@@ -207,6 +207,7 @@ public class ReplicaManager extends ReceiverAdapter {
 			}
 			
 			// Send the response to the frontend
+			System.out.println("Sending request response " + response);
 			try {
 				channel.send(frontend, response.serialize());
 			}catch (Exception e) {
@@ -345,6 +346,7 @@ public class ReplicaManager extends ReceiverAdapter {
 		// If this is the primary RM, announce that this is the coordinator to everyone
 		verifyIfPrimary();
 		if (primary != null && primary.equals(channel.getAddress())) {
+			System.out.println("Announcing ourself as primary");
 			try {
 				channel.send(null, new BullyCoordinatorMessage().serialize());
 			}catch (Exception e) {
