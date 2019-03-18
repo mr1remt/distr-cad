@@ -18,6 +18,9 @@ public class ClientResponseMessage extends UniqueMessage {
 	 */
 	private List<GObject> objectList;
 	
+	private GObject drawnObject = null;
+	private long deletedObject = 0;
+	
 	public ClientResponseMessage() {
 		super(subclassUUID);
 	}
@@ -53,6 +56,22 @@ public class ClientResponseMessage extends UniqueMessage {
 	@Override
 	public String toString() {
 		return "ClientResponseMessage[operationSuccess: " + operationSuccess + "]";
+	}
+
+	public long getDeletedObject() {
+		return deletedObject;
+	}
+
+	public void setDeletedObject(long deletedObject) {
+		this.deletedObject = deletedObject;
+	}
+
+	public GObject getDrawnObject() {
+		return drawnObject;
+	}
+
+	public void setDrawnObject(GObject drawnObject) {
+		this.drawnObject = drawnObject;
 	}
 
 }
