@@ -8,4 +8,5 @@ public abstract class CadDocument implements Iterable<GObject>, Runnable{
 	
 	public abstract int size();
 		
+	public abstract void setGui(GUI gui);
 }
