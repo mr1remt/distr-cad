@@ -188,16 +188,17 @@ public class ReplicaManager extends ReceiverAdapter {
 				response.setOperationSuccess(true);
 				
 			}else if (request instanceof RetrieveObjectsRequest) {
-				
 				// Return a filtered list of all objects
 				List<GObject> activeGObjects = state.getActiveGObjects();
 				response.setObjectList(activeGObjects);
 				response.setOperationSuccess(true);
 			}
-			
+			response.setClientID(request.getClientID());
+			System.out.println("current clientID: " + request.getClientID());
+
 			// Cache the response in case it doesn't arrive
 			state.cacheResponse(response);
-			
+
 			// Update the backup RMs with the new state
 			TransferStateMessage stateTransferMsg = new TransferStateMessage(state);
 			try {
