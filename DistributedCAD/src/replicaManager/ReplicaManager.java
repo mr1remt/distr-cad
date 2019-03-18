@@ -364,8 +364,7 @@ public class ReplicaManager extends ReceiverAdapter {
 			
 			// Then we're the primary
 			primary = channel.getAddress();
-		}else
-			primary = null;
+		}
 	}
 	
 	/**

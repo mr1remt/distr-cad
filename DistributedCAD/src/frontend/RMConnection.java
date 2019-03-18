@@ -26,6 +26,7 @@ public class RMConnection extends ReceiverAdapter {
 	
 	private JChannel	channel;
 	private Address		primary = null;
+	private View		currentView;
 
 	public void connect() throws Exception {
 		channel = new JChannel();
@@ -39,8 +40,12 @@ public class RMConnection extends ReceiverAdapter {
 	 * @return
 	 */
 	public boolean send(MessagePayload msg) {
-		if (primary == null) return false;
-		
+		if (primary == null) {
+			startElection();
+			return false;
+		}
+
+		System.out.println("Sending to RM " + msg.toString());
 		try {
 			channel.send(primary, msg.serialize());
 			return true;
@@ -48,6 +53,26 @@ public class RMConnection extends ReceiverAdapter {
 			e.printStackTrace();
 		}
 		return false;
+	}
+
+	/**
+	 * Starts an election among the replica managers
+	 */
+	private void startElection() {
+		// Don't bother if we're the only member
+		if (currentView.size() == 1) return;
+		
+		// Find the first other member in the group and send a BullyElectionMessage to them
+		for (Address addr : currentView) {
+			if (addr.equals(channel.getAddress())) continue;
+			
+			try {
+				channel.send(addr, new BullyElectionMessage());
+			}catch (Exception e) {
+				continue;
+			}
+			break;
+		}
 	}
 
 	@Override
@@ -93,6 +118,8 @@ public class RMConnection extends ReceiverAdapter {
 	@Override
 	public void viewAccepted(View view) {
 		System.out.println(view.toString());
+		
+		currentView = view;
 		
 		// The view has changed, announce to everyone that this is the frontend
 		FrontendAnnouncement fa = new FrontendAnnouncement();
