@@ -9,6 +9,7 @@ public class Cad {
 		Cad cad = new Cad();
 		gui = new GUI(cad.cd, 750, 600);
 		gui.addToListener();
+		cad.cd.setGui(gui);
 	}
 
 	private Cad() {
