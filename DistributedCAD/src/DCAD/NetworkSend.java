@@ -22,6 +22,7 @@ public class NetworkSend implements Runnable{
 	public void addMessageConfirmed(ClientResponseMessage messageConfirmed) {
 		synchronized (messagesConfirmedLock) {
 			for (ClientResponseMessage crm : messagesConfirmed) {
+				System.out.println("mesage confirmed: " + crm);
 				if (crm.getInstanceID() == messageConfirmed.getInstanceID()) {
 					crm.setOperationSuccess(messageConfirmed.getOperationSuccess());
 					return;
@@ -123,16 +124,16 @@ System.out.println("ns: sendm: " + message);
 				e.printStackTrace();
 			}
 			if (requestSuccessful(uniqueMessage.getInstanceID())) {
-System.out.println("1");
+System.out.println("ns: 1");
 				break;
 			}
 			else if (socketIsClosed()){
-System.out.println("2");
+System.out.println("ns: 2");
 				addMessageToSendFirst(uniqueMessage);
 				break;
 			}
 			else {
-System.out.println("3");
+System.out.println("ns: 3");
 				addMessageToSendFirst(uniqueMessage);
 				try {
 					Thread.sleep(500);

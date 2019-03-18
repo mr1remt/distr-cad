@@ -186,6 +186,7 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 
 		for (GObject go : doc) {
 			if (go.isActive()) {
+				System.out.println("drawing " + doc.size());
 				go.draw(g);
 			}
 		}

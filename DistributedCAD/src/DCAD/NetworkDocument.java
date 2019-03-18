@@ -22,6 +22,7 @@ import se.his.drts.message.UniqueMessage;
 
 public class NetworkDocument extends CadDocument implements Runnable{
 	
+	private GUI gui;
 	private Socket socket = null;
 	private PrintWriter writer;
 	private BufferedReader reader;
@@ -42,6 +43,9 @@ public class NetworkDocument extends CadDocument implements Runnable{
 			// start a send thread if it doesn't already exist
 			new Thread(ns = new NetworkSend()).start();
 		}
+	}
+	public void setGui(GUI gui) {
+		this.gui = gui;
 	}
 	
 	@Override
@@ -148,10 +152,10 @@ System.out.println("received " + uniqueMessage);
 	}
 
 	public void localAddGObjectList(List<GObject> list) {
-System.out.println("loc:addlist ");
+System.out.print("loc:addlist ");
 		//if the list is empty; do nothing, otherwise add all objects to the list
 		if (list != null) {
-System.out.print(" " + list.size());
+System.out.println(" size:" + list.size());
 			for (GObject go : list) {
 				localAddGObject(go);
 			}
@@ -173,9 +177,11 @@ System.out.println("object active changed from: " + go.isActive() + " to: " + ob
 		}
 		// if object is new then add
 		synchronized (objectList) {
-System.out.println("object added");
 			objectList.add(object);
+			System.out.println("object added, active? " + object.isActive() + " list: " + objectList.size());
 		}
+		gui.repaint();
+
 	}
 	
 	public void localRemoveGObject(Long objectID) { 
@@ -186,6 +192,7 @@ System.out.println("loc:removeobj");
 				go.setActive(false);
 			}
 		}
+		gui.repaint();
 	}
 
 	@Override
@@ -218,8 +225,8 @@ System.out.println("addobj");
 					deleteObjectRequest = new DeleteObjectRequest(gobject.getID());
 					break;
 				}
-			}				
-		}		
+			}
+		}
 		
 		//add a message containing the object's ID of the object that should be deleted
 		if (deleteObjectRequest != null) {
