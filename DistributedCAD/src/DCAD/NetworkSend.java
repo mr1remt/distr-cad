@@ -3,6 +3,7 @@ package DCAD;
 import java.io.PrintWriter;
 import java.util.LinkedList;
 
+import se.his.drts.message.ClientResponseMessage;
 import se.his.drts.message.UniqueMessage;
 
 public class NetworkSend implements Runnable{
@@ -11,14 +12,14 @@ public class NetworkSend implements Runnable{
 	private LinkedList<UniqueMessage> messagesToSend = new LinkedList<UniqueMessage>();
 	private final Object waitNotifyLock = new Object();
 	
-	private UniqueMessage messageConfirmed;
+	private ClientResponseMessage messageConfirmed;
 	private boolean socketIsClosed = true;
 		
 	public NetworkSend() {
 	}
 	
-	public UniqueMessage getMessageConfirmed() {return messageConfirmed;}
-	public void setMessageConfirmed(UniqueMessage messageConfirmed) {this.messageConfirmed = messageConfirmed;}
+	public ClientResponseMessage getMessageConfirmed() {return messageConfirmed;}
+	public void setMessageConfirmed(ClientResponseMessage messageConfirmed) {this.messageConfirmed = messageConfirmed;}
 	
 	public boolean socketIsClosed() {return socketIsClosed;}
 	public void setSocketIsClosed(boolean isClosed) {this.socketIsClosed = isClosed;}
@@ -40,6 +41,7 @@ public class NetworkSend implements Runnable{
 	public void run() {
 		while(true) {
 			if (messageAvailable() && !(socketIsClosed())) {
+
 				sendMessage();
 			}
 			else {
@@ -85,6 +87,7 @@ public class NetworkSend implements Runnable{
 		
 			if(writerExists()){
 				writer.println(message);
+				System.out.println("ns: sendm: " + message);
 			}
 			else {
 				addMessageToSendFirst(uniqueMessage);
@@ -99,7 +102,10 @@ public class NetworkSend implements Runnable{
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			if (getMessageConfirmed().getInstanceID() == uniqueMessage.getInstanceID()) {
+			if (getMessageConfirmed() == null) {
+				break;
+			}
+			else if (getMessageConfirmed().getInstanceID() == uniqueMessage.getInstanceID() && getMessageConfirmed().getOperationSuccess()) {
 				setMessageConfirmed(null);
 				break;
 			}

@@ -61,14 +61,18 @@ public class NetworkDocument extends CadDocument implements Runnable{
 				writer = new PrintWriter(socket.getOutputStream(), true);
 				reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			} catch (IOException e) {
+System.out.println("socket setup fail");
 				return false;
 			}
+			
+			this.clientID = getClientID(socket);
+
 			ns.setWriter(writer);
 
 			handshake();
 			
 			ns.setSocketIsClosed(false);
-
+System.out.println("socket set up");
 			return true;
 		}
 		return false;
@@ -84,6 +88,7 @@ public class NetworkDocument extends CadDocument implements Runnable{
 		RetrieveObjectsRequest retrieveObjectsRequest = new RetrieveObjectsRequest(); 
 		retrieveObjectsRequest.setClientID(clientID);
 		ns.addMessageToSendFirst(retrieveObjectsRequest);
+System.out.println("handshaked");
 	}
 	
 	public boolean receive() {
@@ -109,7 +114,7 @@ public class NetworkDocument extends CadDocument implements Runnable{
 			return true;
 		}
 		UniqueMessage uniqueMessage = (UniqueMessage) mp.get();
-
+System.out.println("received " + uniqueMessage);
 		if (uniqueMessage instanceof DrawObjectRequest) {
 			
 			DrawObjectRequest drawObjectMessage = (DrawObjectRequest) uniqueMessage;
@@ -119,7 +124,7 @@ public class NetworkDocument extends CadDocument implements Runnable{
 		else if (uniqueMessage instanceof DeleteObjectRequest) {			
 			DeleteObjectRequest deleteObjectRequest = (DeleteObjectRequest) uniqueMessage;
 			
-			localRemoveGObject(deleteObjectRequest.getGObjectID());
+			localRemoveGObject(deleteObjectRequest.getObjectID());
 		}
 		else if(uniqueMessage instanceof ClientResponseMessage) { 
 			ClientResponseMessage clientResponseMessage = (ClientResponseMessage) uniqueMessage;
@@ -137,7 +142,9 @@ public class NetworkDocument extends CadDocument implements Runnable{
 	}
 
 	public void localAddGObjectList(List<GObject> list) {
+System.out.println("loc:addlist ");
 		if (list != null) {
+System.out.print(" " + list.size());
 			for (GObject go : list) {
 				localAddGObject(go);
 			}
@@ -145,7 +152,7 @@ public class NetworkDocument extends CadDocument implements Runnable{
 	}
 
 	public void localAddGObject(GObject object) { 
-		
+System.out.println("loc:addobj");
 		for (GObject go : this) {
 			if (go.getID() == object.getID()) {
 				// if object already exists change Active to the newest version of the object
@@ -162,6 +169,7 @@ public class NetworkDocument extends CadDocument implements Runnable{
 	}
 	
 	public void localRemoveGObject(Long objectID) { 
+System.out.println("loc:removeobj");
 		// find the object if it already exists and remove it
 		for (GObject go : this) {
 			if (go.getID() == objectID) {
@@ -180,6 +188,7 @@ public class NetworkDocument extends CadDocument implements Runnable{
 		//send a message with the object that should be added
 		DrawObjectRequest drawObjectMessage = new DrawObjectRequest(object);		
 		ns.addMessageToSend(drawObjectMessage);
+System.out.println("addobj");
 	}
 
 	@Override
@@ -205,6 +214,7 @@ public class NetworkDocument extends CadDocument implements Runnable{
 		if (deleteObjectRequest != null) {
 			ns.addMessageToSend(deleteObjectRequest);
 		}
+System.out.println("removeobj");
 	}
 
 	@Override
