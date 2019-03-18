@@ -44,7 +44,10 @@ public class GObject implements Serializable {
     public GColor getColor() {return c;}
     public int getX() {return x;}
     public int getY() {return y;}
-    
+
+	public int getWidth() {return width;}
+	public int getHeight() {return height;}
+	
     public void setID(long id) {this.id = id;}
     public long getID() { return id;}
     
@@ -82,5 +85,9 @@ public class GObject implements Serializable {
 		}else if (s.toString().compareTo(Shape.FILLED_OVAL.toString()) == 0) {
 			g.fillOval(drawX, drawY, drawWidth, drawHeight);
 		}
+	}
+	@Override
+	public String toString() {
+		return "GObject w:" + width + " h:" + height;
 	}
 }

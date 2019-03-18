@@ -7,5 +7,5 @@ public abstract class CadDocument implements Iterable<GObject>, Runnable{
 	public abstract void removeLastGObject();
 	
 	public abstract int size();
-	
+		
 }
