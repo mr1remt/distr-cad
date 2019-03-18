@@ -177,12 +177,14 @@ public class ReplicaManager extends ReceiverAdapter {
 				
 				// Add a new object to the state
 				state.addGObject(((DrawObjectRequest) request).getObject());
+				response.setDrawnObject(((DrawObjectRequest) request).getObject());
 				response.setOperationSuccess(true);
 				
 			}else if (request instanceof DeleteObjectRequest) {
 				
 				// Remove an object by its instance identifier
 				state.removeGObject(((DeleteObjectRequest) request).getObjectID());
+				response.setDeletedObject(((DeleteObjectRequest) request).getObjectID());
 				response.setOperationSuccess(true);
 				
 			}else if (request instanceof RetrieveObjectsRequest) {
