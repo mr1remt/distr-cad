@@ -1,6 +1,10 @@
 package DCAD;
 
-public final class Shape {
+import java.io.Serializable;
+
+public final class Shape implements Serializable {
+	private static final long serialVersionUID = 5866282264372707231L;
+	
 	private String type;
 	
 	public Shape() {
