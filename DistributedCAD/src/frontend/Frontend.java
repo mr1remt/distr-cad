@@ -62,6 +62,7 @@ public class Frontend {
 	public void registerNewClient(String clientID, ClientConnection client) {
 		synchronized (clientList) {
 			clientList.put(clientID, client);
+			System.out.println("ADD cilentID: " + clientID);
 		}
 	}
 	
@@ -78,6 +79,7 @@ public class Frontend {
 	public void forwardResponse(ClientResponseMessage msg) {
 		ClientConnection targetClient;
 		synchronized (clientList) {
+			System.out.println("searching for client: " + msg.getClientID());
 			targetClient = clientList.get(msg.getClientID());
 		}
 		if (targetClient == null) return;

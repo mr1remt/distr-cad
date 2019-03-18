@@ -34,6 +34,7 @@ public class NetworkSend implements Runnable{
 	public boolean requestSuccessful(long instanceID) {
 		synchronized (messagesConfirmedLock) {
 			for (ClientResponseMessage crm : messagesConfirmed) {
+				System.out.println("finding id: " + instanceID + " crm: " + crm.getInstanceID());
 				if (crm.getInstanceID() == instanceID && crm.getOperationSuccess()) {
 					return true;
 				}

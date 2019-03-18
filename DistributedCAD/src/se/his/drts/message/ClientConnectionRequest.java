@@ -19,6 +19,9 @@ public class ClientConnectionRequest extends UniqueMessage {
 	public String getClientID() {
 		return clientID;
 	}
+	public void setClientID(String clientID) {
+		this.clientID = clientID;
+	}
 	
 	@Override
 	public String toString() {

@@ -52,6 +52,7 @@ public class ClientConnection implements Runnable {
 		
 		// Save this clients ID and register the client
 		clientID = ((ClientConnectionRequest) connMsg).getClientID();
+		System.out.println("RECEIVED: " + clientID);
 		Frontend.frontend.registerNewClient(clientID, this);
 		
 		// Main message receive loop
@@ -104,7 +105,7 @@ System.out.println("cc: " + msg);
 		// First, make sure we can still send a response to this client
 		if (socket.isClosed()) disconnect();
 		
-		System.out.println("Sending to client " + mp.toString());
+		System.out.println(clientID + "Sending to client " + mp.toString());
 		String message = mp.serializeAsString();
 		writer.println(message);
 	}
