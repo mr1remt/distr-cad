@@ -41,7 +41,6 @@ public class NetworkSend implements Runnable{
 	public void run() {
 		while(true) {
 			if (messageAvailable() && !(socketIsClosed())) {
-
 				sendMessage();
 			}
 			else {
@@ -107,6 +106,11 @@ public class NetworkSend implements Runnable{
 			}
 			else if (getMessageConfirmed().getInstanceID() == uniqueMessage.getInstanceID() && getMessageConfirmed().getOperationSuccess()) {
 				setMessageConfirmed(null);
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 				break;
 			}
 			else if (socketIsClosed()){
