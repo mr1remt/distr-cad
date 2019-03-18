@@ -26,7 +26,7 @@ public class GColor {
 		return red;
 	}
 
-	public void setRed(byte red) {
+	public void setRed(int red) {
 		this.red = red;
 	}
 
@@ -34,7 +34,7 @@ public class GColor {
 		return green;
 	}
 
-	public void setGreen(byte green) {
+	public void setGreen(int green) {
 		this.green = green;
 	}
 
@@ -42,7 +42,7 @@ public class GColor {
 		return blue;
 	}
 
-	public void setBlue(byte blue) {
+	public void setBlue(int blue) {
 		this.blue = blue;
 	}
 	

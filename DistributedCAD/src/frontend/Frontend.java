@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.HashMap;
 
+import DCAD.GColor;
 import se.his.drts.message.ClientResponseMessage;
 
 public class Frontend {
