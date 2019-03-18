@@ -16,8 +16,12 @@ public class DeleteObjectRequest extends UniqueMessage {
 		this.objectID = objectID;
 	}
 	
-	public long getGObjectID() {
+	public long getObjectID() {
 		return objectID;
+	}
+	
+	public void setObjectID(long objectID) {
+		this.objectID = objectID;
 	}
 	
 	@Override

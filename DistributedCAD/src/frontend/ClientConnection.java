@@ -59,11 +59,11 @@ public class ClientConnection implements Runnable {
 		while(!socket.isClosed() && (msg = receiveMessage()) != null) {
 			
 			// If the message doesn't contain a return address, reply with a negative result
-			
+
 			if (msg instanceof DrawObjectRequest
 					|| msg instanceof DeleteObjectRequest
 					|| msg instanceof RetrieveObjectsRequest) {
-				
+System.out.println("cc: " + msg);
 				if (!rmConnection.send(msg)) {
 					
 					// If we couldn't send the message, report a failure to the client
@@ -89,7 +89,6 @@ public class ClientConnection implements Runnable {
 			System.out.println("Failed to deserialize message");
 			return null;
 		}
-		
 		return optMsg.get();
 	}
 	
@@ -100,7 +99,7 @@ public class ClientConnection implements Runnable {
 	public void sendMessageClient(MessagePayload mp) {
 		// First, make sure we can still send a response to this client
 		if (socket.isClosed()) disconnect();
-		
+System.out.println(mp);
 		String message = mp.serializeAsString();
 		writer.println(message);
 	}

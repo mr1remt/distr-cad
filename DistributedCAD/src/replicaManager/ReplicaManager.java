@@ -182,7 +182,7 @@ public class ReplicaManager extends ReceiverAdapter {
 			}else if (request instanceof DeleteObjectRequest) {
 				
 				// Remove an object by its instance identifier
-				state.removeGObject(((DeleteObjectRequest) request).getGObjectID());
+				state.removeGObject(((DeleteObjectRequest) request).getObjectID());
 				response.setOperationSuccess(true);
 				
 			}else if (request instanceof RetrieveObjectsRequest) {
