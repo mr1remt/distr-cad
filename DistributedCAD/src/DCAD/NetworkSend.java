@@ -12,8 +12,9 @@ public class NetworkSend implements Runnable{
 	private LinkedList<UniqueMessage> messagesToSend = new LinkedList<UniqueMessage>();
 	private LinkedList<ClientResponseMessage> messagesConfirmed = new LinkedList<ClientResponseMessage>();
 	private final Object waitNotifyLock = new Object();
-	private final Object messagesConfirmedLock= new Object();
+	private final Object messagesConfirmedLock = new Object();
 	
+	private String clientID;
 	private boolean socketIsClosed = true;
 		
 	public NetworkSend() {
@@ -22,20 +23,20 @@ public class NetworkSend implements Runnable{
 	public void addMessageConfirmed(ClientResponseMessage messageConfirmed) {
 		synchronized (messagesConfirmedLock) {
 			for (ClientResponseMessage crm : messagesConfirmed) {
-				System.out.println("mesage confirmed: " + crm);
 				if (crm.getInstanceID() == messageConfirmed.getInstanceID()) {
 					crm.setOperationSuccess(messageConfirmed.getOperationSuccess());
 					return;
 				}
 			}
+			System.out.println("added mesage confirmed: " + messageConfirmed);
 			messagesConfirmed.add(messageConfirmed);
 		}
 	}
 	public boolean requestSuccessful(long instanceID) {
 		synchronized (messagesConfirmedLock) {
 			for (ClientResponseMessage crm : messagesConfirmed) {
-				System.out.println("finding id: " + instanceID + " crm: " + crm.getInstanceID());
 				if (crm.getInstanceID() == instanceID && crm.getOperationSuccess()) {
+					System.out.println("finding id: " + instanceID + " crm: " + crm.getInstanceID());
 					return true;
 				}
 			}
@@ -45,6 +46,8 @@ public class NetworkSend implements Runnable{
 	
 	public boolean socketIsClosed() {return socketIsClosed;}
 	public void setSocketIsClosed(boolean isClosed) {this.socketIsClosed = isClosed;}
+	
+	public void setClientID(String clientID) {this.clientID = clientID;}
 	
 	public void setWriter(PrintWriter writer) {this.writer = writer;}
 	public boolean writerExists() {
@@ -105,6 +108,7 @@ public class NetworkSend implements Runnable{
 			synchronized (messagesToSend) {
 				uniqueMessage = (UniqueMessage) messagesToSend.removeFirst();
 			}
+			uniqueMessage.setClientID(clientID);
 			String message = uniqueMessage.serializeAsString();
 		
 			if(writerExists()){

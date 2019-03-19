@@ -76,6 +76,7 @@ System.out.println("socket setup fail");
 			
 			//initialize client id which can be different depending on socket 
 			this.clientID = getClientID(socket);
+			ns.setClientID(clientID);
 			
 			handshake();
 			
@@ -94,7 +95,6 @@ System.out.println("socket setup fail");
 		System.out.println("clientID: " + clientID);
 		//send a message via the networksend requesting all perviously drawn objects
 		RetrieveObjectsRequest retrieveObjectsRequest = new RetrieveObjectsRequest(); 
-		retrieveObjectsRequest.setClientID(clientID);
 		ns.addMessageToSendFirst(retrieveObjectsRequest);
 System.out.println("handshaked");
 	}
@@ -204,7 +204,6 @@ System.out.println("loc:removeobj");
 		
 		//add a message with the object that should be added to the queue of messages to send
 		DrawObjectRequest drawObjectMessage = new DrawObjectRequest(object);
-		drawObjectMessage.setClientID(clientID);
 		ns.addMessageToSend(drawObjectMessage);
 System.out.println("addobj");
 	}
@@ -231,7 +230,6 @@ System.out.println("addobj");
 		
 		//add a message containing the object's ID of the object that should be deleted
 		if (deleteObjectRequest != null) {
-			deleteObjectRequest.setClientID(clientID);
 			ns.addMessageToSend(deleteObjectRequest);
 		}
 System.out.println("removeobj");
