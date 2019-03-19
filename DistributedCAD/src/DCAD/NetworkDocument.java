@@ -104,6 +104,9 @@ System.out.println("handshaked");
 		String message = "";
 		try {
 			message = reader.readLine();
+			
+			if (message == null) throw new IOException();
+			
 		} catch (IOException e) {
 			// frontend has crashed 
 			try {

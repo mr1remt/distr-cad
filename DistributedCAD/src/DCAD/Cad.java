@@ -6,14 +6,18 @@ public class Cad {
 	private CadDocument cd;
 	
 	public static void main(String[] args) {
-		Cad cad = new Cad();
+		int port = 55000;
+		if (args.length == 1) port = Integer.parseInt(args[0]);
+		System.out.println("Client starting on port: " + port);
+		
+		Cad cad = new Cad(port);
 		gui = new GUI(cad.cd, 750, 600);
 		gui.addToListener();
 		cad.cd.setGui(gui);
 	}
 
-	private Cad() {
-		cd = new NetworkDocument("127.0.0.1", 50000);
+	private Cad(int port) {
+		cd = new NetworkDocument("127.0.0.1", port);
 		new Thread(cd).start();
 
 	}

@@ -21,10 +21,10 @@ public class Frontend {
 		clientList = new HashMap<String, ClientConnection>();
 	}
 
-	public void connect() {
+	public void connect(int port, String groupName) {
 		// Open TCP server socket
 		try {
-			serverSocket = new ServerSocket(50000);
+			serverSocket = new ServerSocket(port);
 		}catch (IOException e) {
 			e.printStackTrace();
 			System.exit(-1);
@@ -33,7 +33,7 @@ public class Frontend {
 		// Connect to the replica managers
 		try {
 			rmConn = new RMConnection();
-			rmConn.connect();
+			rmConn.connect(groupName);
 		}catch (Exception e) {
 			e.printStackTrace();
 			System.exit(-1);
@@ -96,8 +96,14 @@ public class Frontend {
 	}
 
 	public static void main(String[] args) {
+		int port = 55000;
+		if (args.length > 0) port = Integer.parseInt(args[0]);
+		String groupName = "CAD-Service";
+		if (args.length > 1) groupName = args[1];
+		System.out.println("Frontend starting on port: " + port + ", group name: " + groupName);
+		
 		frontend = new Frontend();
-		frontend.connect();
+		frontend.connect(port, groupName);
 		frontend.listenForClientConnections();
 	}
 

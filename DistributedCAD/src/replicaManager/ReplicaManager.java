@@ -48,11 +48,12 @@ public class ReplicaManager extends ReceiverAdapter {
 		state = new CADState();
 	}
 	
-	public void connect() {
+	public void connect(String groupName) {
+		System.out.println("Connecting to group: " + groupName);
 		try {
 			channel = new JChannel();
 			channel.setReceiver(this);
-			channel.connect("CAD-Service");
+			channel.connect(groupName);
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -61,7 +62,12 @@ public class ReplicaManager extends ReceiverAdapter {
 	public static void main(String[] args) {
 		try {
 			ReplicaManager rm = new ReplicaManager();
-			rm.connect();
+			
+			String groupName = "CAD-Service";
+			if (args.length == 1) groupName = args[0];
+			System.out.println("RM starting with group name: " + groupName);
+			
+			rm.connect(groupName);
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
