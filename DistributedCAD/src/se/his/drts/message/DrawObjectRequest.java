@@ -22,7 +22,7 @@ public class DrawObjectRequest extends UniqueMessage {
 		return object;
 	}
 	
-	public void setObjectID(GObject object) {
+	public void setObject(GObject object) {
 		this.object = object;
 	}
 	

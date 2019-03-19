@@ -28,10 +28,10 @@ public class RMConnection extends ReceiverAdapter {
 	private Address		primary = null;
 	private View		currentView;
 
-	public void connect() throws Exception {
+	public void connect(String groupName) throws Exception {
 		channel = new JChannel();
 		channel.setReceiver(this);
-		channel.connect("CAD-Service");
+		channel.connect(groupName);
 	}
 	
 	/**
