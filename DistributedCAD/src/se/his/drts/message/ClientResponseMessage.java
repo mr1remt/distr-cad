@@ -55,7 +55,7 @@ public class ClientResponseMessage extends UniqueMessage {
 	
 	@Override
 	public String toString() {
-		return "ClientResponseMessage[operationSuccess: " + operationSuccess + "]";
+		return "ClientResponseMessage[operationSuccess: " + operationSuccess +  " instanceID: " + getInstanceID() + "]";
 	}
 
 	public long getDeletedObject() {

@@ -68,6 +68,7 @@ public class NetworkDocument extends CadDocument implements Runnable{
 				socket = new Socket(serverAddress, serverPort);
 				writer = new PrintWriter(socket.getOutputStream(), true);
 				reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+System.out.println("socket set up");
 			} catch (IOException e) {
 System.out.println("socket setup fail");
 				return false;
@@ -80,7 +81,6 @@ System.out.println("socket setup fail");
 			
 			ns.setWriter(writer);
 			ns.setSocketIsClosed(false);
-System.out.println("socket set up");
 			return true;
 		}
 		return false;

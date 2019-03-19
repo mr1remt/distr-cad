@@ -81,7 +81,7 @@ System.out.println("cc: " + msg);
 		try {
 			jsonMsg = reader.readLine();
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Conection Lost: " + clientID);
 			return null;
 		}
 		
