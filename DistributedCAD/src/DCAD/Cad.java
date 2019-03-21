@@ -12,14 +12,14 @@ public class Cad {
 		if (args.length >= 2) port = Integer.parseInt(args[1]);
 		System.out.println("Client connecting to ip: " + ip + ", port: " + port);
 		
-		Cad cad = new Cad(port);
+		Cad cad = new Cad(ip, port);
 		gui = new GUI(cad.cd, 750, 600);
 		gui.addToListener();
 		cad.cd.setGui(gui);
 	}
 
-	private Cad(int port) {
-		cd = new NetworkDocument("127.0.0.1", port);
+	private Cad(String ip, int port) {
+		cd = new NetworkDocument(ip, port);
 		new Thread(cd).start();
 
 	}
