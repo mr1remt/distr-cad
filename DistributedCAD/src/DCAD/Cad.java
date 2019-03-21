@@ -6,9 +6,11 @@ public class Cad {
 	private CadDocument cd;
 	
 	public static void main(String[] args) {
+		String ip = "127.0.0.1";
+		if (args.length >= 1) ip = args[0];
 		int port = 55000;
-		if (args.length == 1) port = Integer.parseInt(args[0]);
-		System.out.println("Client starting on port: " + port);
+		if (args.length >= 2) port = Integer.parseInt(args[1]);
+		System.out.println("Client connecting to ip: " + ip + ", port: " + port);
 		
 		Cad cad = new Cad(port);
 		gui = new GUI(cad.cd, 750, 600);
