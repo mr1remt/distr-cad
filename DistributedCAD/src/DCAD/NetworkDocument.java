@@ -1,5 +1,6 @@
 package DCAD;
 
+import java.awt.Graphics;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -10,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+import org.jgroups.stack.GossipData;
 import org.omg.Messaging.SyncScopeHelper;
 
 import se.his.drts.message.ClientConnectionRequest;
@@ -167,15 +169,17 @@ System.out.println(" size:" + list.size());
 
 	public void localAddGObject(GObject object) { 
 System.out.println("loc:addobj");
-		for (GObject go : this) {
-			if (go.getID() == object.getID()) {
-System.out.println("object exists already");
-				// if object already exists change Active to the newest version of the object
-				if (go.isActive()) {
-System.out.println("object active changed from: " + go.isActive() + " to: " + object.isActive());
-					go.setActive(object.isActive());
+		synchronized (objectList) {
+			for (GObject go : this) {
+				if (go.getID() == object.getID()) {
+	System.out.println("object exists already");
+					// if object already exists change Active to the newest version of the object
+					if (go.isActive()) {
+	System.out.println("object active changed from: " + go.isActive() + " to: " + object.isActive());
+						go.setActive(object.isActive());
+					}
+					return;
 				}
-				return;
 			}
 		}
 		// if object is new then add
@@ -190,9 +194,11 @@ System.out.println("object active changed from: " + go.isActive() + " to: " + ob
 	public void localRemoveGObject(Long objectID) { 
 System.out.println("loc:removeobj");
 		// find the object if it already exists and remove it by changing Active
-		for (GObject go : this) {
-			if (go.getID() == objectID) {
-				go.setActive(false);
+		synchronized (objectList) {
+			for (GObject go : this) {
+				if (go.getID() == objectID) {
+					go.setActive(false);
+				}
 			}
 		}
 		gui.repaint();
@@ -247,6 +253,16 @@ System.out.println("removeobj");
 	
 	public Iterator<GObject> iterator() {
 		return objectList.iterator(); 
+	}
+	
+	public void draw (Graphics g) {
+		synchronized (objectList) {
+			for (GObject go : this) {
+				if (go.isActive()) {
+					go.draw(g);
+				}
+			}
+		}
 	}
 	
 	public static String getClientID(Socket socket) {
